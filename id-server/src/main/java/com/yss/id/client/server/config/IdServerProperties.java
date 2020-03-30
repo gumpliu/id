@@ -1,4 +1,4 @@
-package com.yss.id.client.server.baseplatform.config;
+package com.yss.id.client.server.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;

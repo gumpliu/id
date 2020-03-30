@@ -1,6 +1,6 @@
 package com.yss.id.client.server.domain.segment.service;
 
-import com.yss.id.client.server.domain.segment.model.SegmentId;
+import com.yss.id.client.core.model.SegmentId;
 
 /**
  * @Author: gumpLiu

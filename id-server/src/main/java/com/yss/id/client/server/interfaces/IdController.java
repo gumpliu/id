@@ -1,6 +1,6 @@
-package com.yss.id.client.server.interfaces.controller;
+package com.yss.id.client.server.interfaces;
 
-import com.yss.id.client.server.domain.segment.model.SegmentId;
+import com.yss.id.client.core.model.SegmentId;
 import com.yss.id.client.server.domain.segment.service.IdService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -30,7 +30,7 @@ public class IdController {
      * @return
      */
     @ResponseBody
-    @RequestMapping(value="/segment/{bizTag}", method = RequestMethod.GET, produces="application/json")
+    @RequestMapping(value="/segment/{bizTag}", method = RequestMethod.POST, produces="application/json")
     public SegmentId getSegment(@PathVariable String bizTag) {
 
         return segmentService.getSegment(bizTag);

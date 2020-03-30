@@ -1,6 +1,6 @@
 package com.yss.id.client.server;
 
-import com.yss.id.client.server.baseplatform.config.IdServerProperties;
+import com.yss.id.client.server.config.IdServerProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

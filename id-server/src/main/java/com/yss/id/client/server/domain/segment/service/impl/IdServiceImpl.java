@@ -1,8 +1,8 @@
 package com.yss.id.client.server.domain.segment.service.impl;
 
-import com.yss.id.client.server.baseplatform.config.IdServerProperties;
+import com.yss.id.client.core.model.SegmentId;
+import com.yss.id.client.server.config.IdServerProperties;
 import com.yss.id.client.server.domain.segment.entity.AllocEntity;
-import com.yss.id.client.server.domain.segment.model.SegmentId;
 import com.yss.id.client.server.domain.segment.repository.AllocRepository;
 import com.yss.id.client.server.domain.segment.service.IdService;
 import org.springframework.beans.factory.annotation.Autowired;

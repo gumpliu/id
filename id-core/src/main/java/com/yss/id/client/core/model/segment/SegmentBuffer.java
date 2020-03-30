@@ -5,19 +5,9 @@ import com.yss.id.client.core.model.BaseBuffer;
 /**
  * 号段模式 双缓存
  */
-public class SegmentBuffer extends BaseBuffer {
-    private Segment[] segments; //双buffer
+public class SegmentBuffer extends BaseBuffer<Segment> {
 
     public SegmentBuffer() {
-        segments = new Segment[]{new Segment(this), null};
+        buffers = new Segment[]{new Segment(this), null};
     }
-
-    public Segment[] getSegments() {
-        return segments;
-    }
-
-    public Segment getCurrent() {
-        return segments[getCurrentPos()];
-    }
-
 }

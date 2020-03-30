@@ -1,19 +1,15 @@
 package com.yss.id.client.core.model;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 /**
  * 双buffer
  */
-public class BaseBuffer {
+public class BaseBuffer<T> {
     private String key;
+    protected T[] buffers;
     private volatile int currentPos; //当前的使用的segment的index
     private volatile int step;
     private volatile int minStep;
-    private volatile long updateTimestamp;
+
 
     public BaseBuffer() {
         currentPos = 0;
@@ -55,11 +51,16 @@ public class BaseBuffer {
         this.minStep = minStep;
     }
 
-    public long getUpdateTimestamp() {
-        return updateTimestamp;
+    public T[] getBuffers() {
+        return buffers;
     }
 
-    public void setUpdateTimestamp(long updateTimestamp) {
-        this.updateTimestamp = updateTimestamp;
+    public void setBuffers(T[] buffers) {
+        this.buffers = buffers;
     }
+
+    public T getCurrent() {
+        return buffers[getCurrentPos()];
+    }
+
 }

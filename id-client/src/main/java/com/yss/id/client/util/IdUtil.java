@@ -1,7 +1,7 @@
-package com.yss.id.client;
+package com.yss.id.client.util;
 
 import com.yss.id.client.core.generator.IdGenerator;
-import com.yss.id.client.core.factory.IdGeneratorFactory;
+import com.yss.id.client.factory.IdGeneratorFactory;
 
 /**
  * @Description: id 获取类

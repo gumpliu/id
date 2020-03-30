@@ -1,7 +1,7 @@
 package com.yss.id.client.core.exception;
 
 /**
- * @Description: TODO
+ * @Description: id-generator 统一异常定义
  * @Author gumpLiu
  * @Date 2020-03-26
  * @Version V1.0

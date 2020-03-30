@@ -1,73 +1,59 @@
 package com.yss.id.client.core.generator;
 
-import com.yss.id.client.core.factory.IdGeneratorFactory;
-import com.yss.id.client.core.service.IdService;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import com.yss.id.client.core.generator.segment.IdSegmentGenerator;
+import com.yss.id.client.core.generator.snowflake.IdSnowflakeGenerator;
 
 /**
- * @Description: id生成器
+ * id生成器
+ *
  * @Author gumpLiu
  * @Date 2020-03-25
  * @Version V1.0
  **/
-public class IdGeneratorImpl extends AbstractIdGenerator {
+public class IdGeneratorImpl implements IdGenerator {
 
-    public IdGeneratorImpl(IdService idService){
-        super(idService);
+    private IdSegmentGenerator segmentGenerator;
+
+    private IdSnowflakeGenerator snowflakeGenerator;
+
+    public IdGeneratorImpl(IdSegmentGenerator segmentGenerator,
+                           IdSnowflakeGenerator snowflakeGenerator){
+        this.segmentGenerator = segmentGenerator;
+        this.snowflakeGenerator = snowflakeGenerator;
     }
 
     @Override
     public String getSegmentNextId(String bizTag) {
-        return nextId(bizTag);
+        return segmentGenerator.getSegmentNextId(bizTag);
     }
 
     @Override
     public String getSegmentFixedLengthNextId(String bizTag) {
-        return fixedLengthNextId(bizTag);
+        return segmentGenerator.getSegmentFixedLengthNextId(bizTag);
     }
 
     @Override
     public String getSegmentFixedLengthNextId(String prefix, String bizTag) {
-        return prefix + fixedLengthNextId(bizTag);
+        return segmentGenerator.getSegmentFixedLengthNextId(prefix, bizTag);
     }
 
     @Override
     public String getSegmentFixedLengthNextId(String bizTag, int length) {
-        return fixedLengthNextId(bizTag, length);
+        return segmentGenerator.getSegmentFixedLengthNextId(bizTag, length);
     }
 
     @Override
     public String getSegmentFixedLengthNextId(String prefix, String bizTag, int length) {
-        return prefix + fixedLengthNextId(bizTag, length);
+        return segmentGenerator.getSegmentFixedLengthNextId(prefix, bizTag, length);
     }
 
     @Override
     public String getSnowflakeNextId() {
-        return null;
+        return snowflakeGenerator.getSnowflakeNextId();
     }
 
     @Override
     public String getSnowflakeNextId(Enum format) {
-        return null;
+        return snowflakeGenerator.getSnowflakeNextId(format);
     }
-
-
-    public static void main(String[] args){
-        IdGenerator idGenerator =  IdGeneratorFactory.getIdGenerator();
-        ExecutorService executorService = Executors.newFixedThreadPool(4);
-
-        for(int i = 0 ; i < 5; i++){
-            executorService.execute(new Runnable() {
-                @Override
-                public void run() {
-                    System.out.println(idGenerator.getSegmentNextId("lsp"));
-
-                }
-            });
-        }
-
-    }
-
 }
