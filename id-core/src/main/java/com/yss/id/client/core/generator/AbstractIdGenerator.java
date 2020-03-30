@@ -77,14 +77,17 @@ public abstract class AbstractIdGenerator<T> {
 
         T nextBuffer = (T) baseBuffer.getBuffers()[baseBuffer.getCurrentPos()];
 
-        if(!isloadNextBuffer(currentBuffer, nextBuffer)){
+        //是否需要获取下一缓存
+        isloadNextBuffer(currentBuffer, nextBuffer);
+
+        if(baseBuffer.isNextReady()){
 
             synchronized (baseBuffer){
-                //已经获取下一缓存信息
-                if(!isloadNextBuffer(currentBuffer, nextBuffer)){
+                if(baseBuffer.isNextReady()){
                     //远程调用服务获取segment
                     romoteLoadNextBuffer(bizTag, baseBuffer);
                 }
+
             }
         }
     }

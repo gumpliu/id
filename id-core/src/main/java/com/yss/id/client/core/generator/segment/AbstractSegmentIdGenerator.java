@@ -9,11 +9,14 @@ import com.yss.id.client.core.model.segment.Segment;
 import com.yss.id.client.core.model.segment.SegmentBuffer;
 import com.yss.id.client.core.service.IdService;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @Description: 号段模式实现，直接从id-server获取id
@@ -110,22 +113,29 @@ public abstract class AbstractSegmentIdGenerator extends AbstractIdGenerator<Seg
 
     @Override
     public BaseBuffer createBaseBuffer(String bizTag) {
-
-        SegmentBuffer segmentBuffer = new SegmentBuffer();
-
-        baseMap.put(bizTag, segmentBuffer);
-
         //远程调用服务获取segment
         SegmentId segmentId = idService.getSegmentId(bizTag);
+
+        SegmentBuffer segmentBuffer = new SegmentBuffer();
+        baseMap.put(bizTag, segmentBuffer);
         Segment segment = segmentBuffer.getCurrent();
         segment.setMax(segmentId.getMaxId());
         segment.setStep(segmentId.getStep());
+        AtomicLong currentId = new AtomicLong(segment.getMax() - segment.getStep());
+        segment.setValue(currentId);
 
         return segmentBuffer;
     }
 
+    //todo nextReady需要重构
     @Override
     public boolean isloadNextBuffer(Segment currentBuffer, Segment nextBuffer) {
+
+        BaseBuffer baseBuffer = currentBuffer.getBuffer();
+
+        if(baseBuffer.isNextReady()){
+
+        }
 
         //已经获取下一缓存信息
         if(nextBuffer != null && nextBuffer.getMax() > currentBuffer.getMax()){
@@ -134,9 +144,14 @@ public abstract class AbstractSegmentIdGenerator extends AbstractIdGenerator<Seg
 
         long initValue = currentBuffer.getMax() - currentBuffer.getStep();
 
-        int currentThreshold = (int)((currentBuffer.getValue().get() - initValue) / currentBuffer.getStep() * 100);
+        BigDecimal currentThreshold = BigDecimal.valueOf(currentBuffer.getValue().get() - initValue)
+                                    .divide(BigDecimal.valueOf(initValue))
+                                    .setScale(2, BigDecimal.ROUND_HALF_UP).abs()
+                                    .multiply(BigDecimal.valueOf(100));
 
-        return currentThreshold >= Constants.ID_THRESHOLDVALUE;
+        boolean nextReady = currentThreshold.longValue() < Constants.ID_THRESHOLDVALUE;
+
+        return nextReady;
 
     }
 
@@ -148,6 +163,7 @@ public abstract class AbstractSegmentIdGenerator extends AbstractIdGenerator<Seg
         Segment segment = new Segment(segmentBuffer);
         segment.setMax(segmentId.getMaxId());
         segment.setStep(segmentId.getStep());
+        segmentBuffer.setNextReady(false);
         segmentBuffer.getBuffers()[segmentBuffer.nextPos()] = segment;
     }
 
@@ -197,6 +213,4 @@ public abstract class AbstractSegmentIdGenerator extends AbstractIdGenerator<Seg
             throw new IdException("id length is error !!");
         }
     }
-
-
 }

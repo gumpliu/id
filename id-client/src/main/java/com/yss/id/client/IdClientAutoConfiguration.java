@@ -26,7 +26,7 @@ import org.springframework.context.annotation.Configuration;
 public class IdClientAutoConfiguration {
 
     @Bean
-    public BeanUtil beanUtil(){
+    public BeanUtil idClientBeanUtil(){
         return new BeanUtil();
     }
 

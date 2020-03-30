@@ -32,7 +32,7 @@
         <org.apache.poi.version>3.13</org.apache.poi.version>
         <javax.servlet.api.version>3.1.0</javax.servlet.api.version>
         <com.belerweb.pinyin4j.version>2.5.1</com.belerweb.pinyin4j.version>
-
+        <com.alibaba.fastjson.version>1.2.58</com.alibaba.fastjson.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>

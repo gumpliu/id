@@ -4,6 +4,7 @@ import com.yss.id.client.core.generator.IdGenerator;
 import com.yss.id.client.core.generator.IdGeneratorImpl;
 import com.yss.id.client.core.generator.segment.IdSegmentGenerator;
 import com.yss.id.client.core.generator.snowflake.IdSnowflakeGenerator;
+import com.yss.id.client.util.BeanUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -18,12 +19,6 @@ import java.util.concurrent.Executors;
  **/
 public class IdGeneratorFactory {
 
-    @Autowired
-    private static IdSegmentGenerator segmentGenerator;
-
-    @Autowired
-    private static IdSnowflakeGenerator snowflakeGenerator;
-
     private static IdGenerator idGenerator;
 
     private IdGeneratorFactory(){}
@@ -32,6 +27,8 @@ public class IdGeneratorFactory {
         if(idGenerator == null){
             synchronized (IdGeneratorFactory.class){
                 if(idGenerator == null){
+                    IdSegmentGenerator segmentGenerator = BeanUtil.getBean(IdSegmentGenerator.class);
+                    IdSnowflakeGenerator snowflakeGenerator = BeanUtil.getBean(IdSnowflakeGenerator.class);
                     idGenerator = new IdGeneratorImpl(segmentGenerator, snowflakeGenerator);
                 }
             }

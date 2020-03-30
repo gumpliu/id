@@ -9,7 +9,7 @@ public class BaseBuffer<T> {
     private volatile int currentPos; //当前的使用的segment的index
     private volatile int step;
     private volatile int minStep;
-
+    private volatile boolean nextReady; //下一个segment是否处于可切换状态
 
     public BaseBuffer() {
         currentPos = 0;
@@ -63,4 +63,11 @@ public class BaseBuffer<T> {
         return buffers[getCurrentPos()];
     }
 
+    public boolean isNextReady() {
+        return nextReady;
+    }
+
+    public void setNextReady(boolean nextReady) {
+        this.nextReady = nextReady;
+    }
 }

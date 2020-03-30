@@ -1,5 +1,6 @@
 package com.yss.id.client.service;
 
+import com.alibaba.fastjson.JSON;
 import com.yss.id.client.config.IdClientConfig;
 import com.yss.id.client.core.model.SegmentId;
 import com.yss.id.client.core.service.IdService;
@@ -33,7 +34,8 @@ public class HttpIdServiceImpl implements IdService {
         if (response == null || "".equals(response.trim())) {
             return null;
         }
-        SegmentId segmentId = new SegmentId();
+        SegmentId segmentId  = JSON.parseObject(response, SegmentId.class);
+
         return segmentId;
     }
 
@@ -60,7 +62,7 @@ public class HttpIdServiceImpl implements IdService {
             Random r = new Random();
             url = serverList.get(r.nextInt(serverList.size()));
         }
-        url += bizType;
+        url += "/" + bizType;
         return url;
     }
 
