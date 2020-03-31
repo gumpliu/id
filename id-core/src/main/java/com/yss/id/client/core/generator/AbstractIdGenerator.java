@@ -22,6 +22,28 @@ public abstract class AbstractIdGenerator<T> {
         this.idService = idService;
     }
 
+
+    /**
+     * 获取 nextId
+     * @param bizTag
+     * @return
+     */
+    public String nextId(String bizTag){
+
+        BaseBuffer<T> baseBuffer = getBuffer(bizTag);
+
+        String nextId = nextId(baseBuffer.getCurrent());
+        //获取下一缓存
+        loadNextBuffer(bizTag);
+        //nextId 等于maxId时，切换缓存
+        if(switchBufer(baseBuffer.getCurrent())){
+            baseBuffer.switchPos();
+            baseBuffer.setAlreadyLoadBuffer(false);
+        }
+
+        return nextId;
+    }
+
     /**
      * 获取缓存
      *
@@ -57,7 +79,9 @@ public abstract class AbstractIdGenerator<T> {
                 if(baseMap.get(bizTag) != null){
                     return baseMap.get(bizTag);
                 }
-                baseBuffer = createBaseBuffer(bizTag);
+                baseMap.put(bizTag, new BaseBuffer());
+
+                romoteLoadNextBuffer(bizTag, baseMap.get(bizTag));
             }
         }
         return baseBuffer;
@@ -77,15 +101,16 @@ public abstract class AbstractIdGenerator<T> {
 
         T nextBuffer = (T) baseBuffer.getBuffers()[baseBuffer.getCurrentPos()];
 
-        //是否需要获取下一缓存
-        isloadNextBuffer(currentBuffer, nextBuffer);
+        //是否需要获取下一缓存，维护nextReady状态
 
-        if(baseBuffer.isNextReady()){
+        if(!baseBuffer.isAlreadyLoadBuffer() && isloadNextBuffer(currentBuffer, nextBuffer)){
 
             synchronized (baseBuffer){
-                if(baseBuffer.isNextReady()){
+                if(!baseBuffer.isAlreadyLoadBuffer()){
                     //远程调用服务获取segment
                     romoteLoadNextBuffer(bizTag, baseBuffer);
+
+                    baseBuffer.setAlreadyLoadBuffer(true);
                 }
 
             }
@@ -93,13 +118,19 @@ public abstract class AbstractIdGenerator<T> {
     }
 
     /**
-     * 创建baseBuffer
-     *
-     * @param bizTag
+     * 根据当前缓存获取id
+     * @param currentBuffer
      * @return
      */
+    protected abstract String nextId(T currentBuffer);
 
-    public abstract BaseBuffer createBaseBuffer(String bizTag);
+    /**
+     * 是否切换至下一缓存，当id消耗完后切换
+     *
+     * @param currentBuffer
+     * @return
+     */
+    protected abstract boolean switchBufer(T currentBuffer);
 
     /**
      * 是否需要获取二级缓存
@@ -108,7 +139,7 @@ public abstract class AbstractIdGenerator<T> {
      * @param nextBuffer
      * @return
      */
-    public abstract boolean isloadNextBuffer(T currentBuffer, T nextBuffer);
+    protected abstract boolean isloadNextBuffer(T currentBuffer, T nextBuffer);
 
     /**
      * 远程获取缓存内容
@@ -116,6 +147,6 @@ public abstract class AbstractIdGenerator<T> {
      * @param bizTag
      * @param baseBuffer
      */
-    public abstract void romoteLoadNextBuffer(String bizTag,  BaseBuffer baseBuffer);
+    protected abstract void romoteLoadNextBuffer(String bizTag,  BaseBuffer baseBuffer);
 
 }

@@ -15,24 +15,26 @@ import java.util.Queue;
  * @Date 2020-03-26
  * @Version V1.0
  **/
-public abstract class AbstractSnowflakeIdGenerator extends AbstractIdGenerator implements IdSnowflakeGenerator{
+public abstract class AbstractSnowflakeIdGenerator extends AbstractIdGenerator<Queue> implements IdSnowflakeGenerator{
 
     public AbstractSnowflakeIdGenerator(IdService idService) {
         super(idService);
     }
 
-    /**
-     * 获取 nextId
-     *
-     * @return
-     */
     public String nextId(){
 
-        SnowflakeBuffer snowflakeBuffer = (SnowflakeBuffer) getBuffer(Constants.SNOWFLAKE_KEY);
+        return nextId(Constants.SNOWFLAKE_KEY);
 
-        Queue queue = snowflakeBuffer.getCurrent();
+    }
 
-        return "";
+    @Override
+    protected String nextId(Queue currentBuffer) {
+        return null;
+    }
+
+    @Override
+    protected boolean switchBufer(Queue currentBuffer) {
+        return false;
     }
 
     /**
@@ -50,17 +52,12 @@ public abstract class AbstractSnowflakeIdGenerator extends AbstractIdGenerator i
     }
 
     @Override
-    public BaseBuffer createBaseBuffer(String bizTag) {
-        return null;
-    }
-
-    @Override
-    public boolean isloadNextBuffer(Object currentBuffer, Object nextBuffer) {
+    protected boolean isloadNextBuffer(Queue currentBuffer, Queue nextBuffer) {
         return false;
     }
 
     @Override
-    public void romoteLoadNextBuffer(String bizTag, BaseBuffer baseBuffer) {
+    protected void romoteLoadNextBuffer(String bizTag, BaseBuffer baseBuffer) {
 
     }
 

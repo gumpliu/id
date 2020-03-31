@@ -28,36 +28,11 @@ public abstract class AbstractSegmentIdGenerator extends AbstractIdGenerator<Seg
 
     private Map<String, Long> maxValueMap = new ConcurrentHashMap<String, Long>();
 
-    private ExecutorService executorService = Executors.newFixedThreadPool(4);
-
     public AbstractSegmentIdGenerator(IdService idService) {
         super(idService);
     }
 
-    /**
-     * 获取 nextId
-     * @param bizTag
-     * @return
-     */
-    public String nextId(String bizTag){
 
-        SegmentBuffer segmentBuffer = (SegmentBuffer) getBuffer(bizTag);
-
-        Segment segment = segmentBuffer.getCurrent();
-
-        //nextId = currentId + 1，currentId初始默认为0
-        long nextId = segment.getValue().incrementAndGet();
-
-        //nextId 等于maxId时，切换缓存
-        if(nextId == segment.getMax()){
-            segmentBuffer.switchPos();
-        }
-
-        //获取下一缓存
-        loadNextBuffer(bizTag);
-
-        return BigInteger.valueOf(nextId).toString();
-    }
 
     /**
      * 获取 固定长度 nextId，默认为6位 位数不够前面补0
@@ -82,12 +57,11 @@ public abstract class AbstractSegmentIdGenerator extends AbstractIdGenerator<Seg
 
         Segment segment = segmentBuffer.getCurrent();
 
-
         //nextId = currentId + 1，currentId初始默认为0
-        long nextId = segment.getValue().incrementAndGet();
+        segment.getValue().incrementAndGet();
 
         //nextId超过位数最大值，segment重新初始化
-        if(nextId > maxValue(bizTag, length)){
+        if(segment.getValue().get() > maxValue(bizTag, length)){
             SegmentId segmentId = idService.initSegmentId(bizTag);
             segment.setMax(segmentId.getMaxId());
             segment.setStep(segmentId.getStep());
@@ -98,44 +72,35 @@ public abstract class AbstractSegmentIdGenerator extends AbstractIdGenerator<Seg
             }
 
             //重新计算nextId
-            nextId = segment.getValue().getAndAdd(1L);
-        }
-
-        if(nextId == segment.getMax()){
-            segmentBuffer.switchPos();
+            segment.getValue().incrementAndGet();
         }
 
         //获取下一缓存
         loadNextBuffer(bizTag);
 
+        if(segment.getValue().get() == segment.getMax()){
+            segmentBuffer.switchPos();
+            segmentBuffer.setAlreadyLoadBuffer(false);
+        }
+
+
         return appendZero(segment.getValue().toString(), length);
     }
 
     @Override
-    public BaseBuffer createBaseBuffer(String bizTag) {
-        //远程调用服务获取segment
-        SegmentId segmentId = idService.getSegmentId(bizTag);
+    protected String nextId(Segment currentBuffer) {
 
-        SegmentBuffer segmentBuffer = new SegmentBuffer();
-        baseMap.put(bizTag, segmentBuffer);
-        Segment segment = segmentBuffer.getCurrent();
-        segment.setMax(segmentId.getMaxId());
-        segment.setStep(segmentId.getStep());
-        AtomicLong currentId = new AtomicLong(segment.getMax() - segment.getStep());
-        segment.setValue(currentId);
-
-        return segmentBuffer;
+        return String.valueOf(currentBuffer.getValue().incrementAndGet());
     }
 
-    //todo nextReady需要重构
     @Override
-    public boolean isloadNextBuffer(Segment currentBuffer, Segment nextBuffer) {
+    protected boolean switchBufer(Segment currentBuffer) {
+        //todo BigInteger  BigDecimal 超长计算
+        return currentBuffer.getValue().get() == currentBuffer.getMax();
+    }
 
-        BaseBuffer baseBuffer = currentBuffer.getBuffer();
-
-        if(baseBuffer.isNextReady()){
-
-        }
+    @Override
+    protected boolean isloadNextBuffer(Segment currentBuffer, Segment nextBuffer) {
 
         //已经获取下一缓存信息
         if(nextBuffer != null && nextBuffer.getMax() > currentBuffer.getMax()){
@@ -145,25 +110,23 @@ public abstract class AbstractSegmentIdGenerator extends AbstractIdGenerator<Seg
         long initValue = currentBuffer.getMax() - currentBuffer.getStep();
 
         BigDecimal currentThreshold = BigDecimal.valueOf(currentBuffer.getValue().get() - initValue)
-                                    .divide(BigDecimal.valueOf(initValue))
-                                    .setScale(2, BigDecimal.ROUND_HALF_UP).abs()
+                                    .divide(BigDecimal.valueOf(currentBuffer.getStep()))
+                                    .setScale(2, BigDecimal.ROUND_HALF_UP)
                                     .multiply(BigDecimal.valueOf(100));
 
-        boolean nextReady = currentThreshold.longValue() < Constants.ID_THRESHOLDVALUE;
-
-        return nextReady;
-
+        return currentThreshold.intValue() > Constants.ID_THRESHOLDVALUE;
     }
 
     @Override
-    public void romoteLoadNextBuffer(String bizTag, BaseBuffer baseBuffer) {
+    protected void romoteLoadNextBuffer(String bizTag, BaseBuffer baseBuffer) {
         //远程调用服务获取segment
         SegmentBuffer segmentBuffer = (SegmentBuffer) baseBuffer;
         SegmentId segmentId = idService.getSegmentId(bizTag);
         Segment segment = new Segment(segmentBuffer);
         segment.setMax(segmentId.getMaxId());
         segment.setStep(segmentId.getStep());
-        segmentBuffer.setNextReady(false);
+        AtomicLong currentId = new AtomicLong(segment.getMax() - segment.getStep());
+        segment.setValue(currentId);
         segmentBuffer.getBuffers()[segmentBuffer.nextPos()] = segment;
     }
 

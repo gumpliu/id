@@ -10,6 +10,8 @@ public class BaseBuffer<T> {
     private volatile int step;
     private volatile int minStep;
     private volatile boolean nextReady; //下一个segment是否处于可切换状态
+    private volatile boolean alreadyLoadBuffer; //是否已经换成另一缓存
+
 
     public BaseBuffer() {
         currentPos = 0;
@@ -69,5 +71,13 @@ public class BaseBuffer<T> {
 
     public void setNextReady(boolean nextReady) {
         this.nextReady = nextReady;
+    }
+
+    public boolean isAlreadyLoadBuffer() {
+        return alreadyLoadBuffer;
+    }
+
+    public void setAlreadyLoadBuffer(boolean alreadyLoadBuffer) {
+        this.alreadyLoadBuffer = alreadyLoadBuffer;
     }
 }
