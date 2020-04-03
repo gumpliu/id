@@ -1,5 +1,6 @@
 package com.yss.id.client.core.generator.segment;
 
+import com.alibaba.fastjson.JSON;
 import com.yss.id.client.core.Constants;
 import com.yss.id.client.core.exception.IdException;
 import com.yss.id.client.core.generator.AbstractIdGenerator;
@@ -32,8 +33,6 @@ public abstract class AbstractSegmentIdGenerator extends AbstractIdGenerator<Seg
         super(idService);
     }
 
-
-
     /**
      * 获取 固定长度 nextId，默认为6位 位数不够前面补0
      * @param bizTag
@@ -55,37 +54,53 @@ public abstract class AbstractSegmentIdGenerator extends AbstractIdGenerator<Seg
 
         SegmentBuffer segmentBuffer = (SegmentBuffer) getBuffer(bizTag);
 
-        Segment segment = segmentBuffer.getCurrent();
+        synchronized (segmentBuffer){
+            Segment segment = segmentBuffer.getCurrent();
 
-        //nextId = currentId + 1，currentId初始默认为0
-        segment.getValue().incrementAndGet();
+            //nextId = currentId + 1，currentId初始默认为0
+            segment.getValue().incrementAndGet();
 
-        //nextId超过位数最大值，segment重新初始化
-        if(segment.getValue().get() > maxValue(bizTag, length)){
-            SegmentId segmentId = idService.initSegmentId(bizTag);
-            segment.setMax(segmentId.getMaxId());
-            segment.setStep(segmentId.getStep());
+            //nextId超过位数最大值，segment重新初始化
+            if(segment.getValue().get() > maxValue(bizTag, length)){
+                SegmentId segmentId = idService.initSegmentId(bizTag);
+                segment.setMax(segmentId.getMaxId());
+                segment.setStep(segmentId.getStep());
 
-            //另一缓存设置为空
-            if(segmentBuffer.getBuffers()[segmentBuffer.nextPos()] != null){
-                segmentBuffer.getBuffers()[segmentBuffer.nextPos()] = null;
+                //另一缓存设置为空
+                if(segmentBuffer.getBuffers()[segmentBuffer.nextPos()] != null){
+                    segmentBuffer.getBuffers()[segmentBuffer.nextPos()] = null;
+                }
+
+                //重新计算nextId
+                segment.getValue().incrementAndGet();
             }
 
-            //重新计算nextId
-            segment.getValue().incrementAndGet();
+            //获取下一缓存
+            loadNextBuffer(bizTag);
+            //nextId 等于maxId时，切换缓存
+            if(switchBufer(segment)){
+                segmentBuffer.switchPos();
+                segmentBuffer.setAlreadyLoadBuffer(false);
+            }
+
+            return appendZero(segment.getValue().toString(), length);
         }
-
-        //获取下一缓存
-        loadNextBuffer(bizTag);
-
-        if(segment.getValue().get() == segment.getMax()){
-            segmentBuffer.switchPos();
-            segmentBuffer.setAlreadyLoadBuffer(false);
-        }
-
-
-        return appendZero(segment.getValue().toString(), length);
     }
+
+    @Override
+    public BaseBuffer createBaseBuffer(String bizTag) {
+        //远程调用服务获取segment
+        SegmentId segmentId = idService.getSegmentId(bizTag);
+
+        SegmentBuffer segmentBuffer = new SegmentBuffer();
+        Segment segment = segmentBuffer.getCurrent();
+        segment.setMax(segmentId.getMaxId());
+        segment.setStep(segmentId.getStep());
+        AtomicLong currentId = new AtomicLong(segment.getMax() - segment.getStep());
+        segment.setValue(currentId);
+        return segmentBuffer;
+    }
+
 
     @Override
     protected String nextId(Segment currentBuffer) {
@@ -96,7 +111,7 @@ public abstract class AbstractSegmentIdGenerator extends AbstractIdGenerator<Seg
     @Override
     protected boolean switchBufer(Segment currentBuffer) {
         //todo BigInteger  BigDecimal 超长计算
-        return currentBuffer.getValue().get() == currentBuffer.getMax();
+        return BigDecimal.valueOf(currentBuffer.getValue().get()).compareTo(BigDecimal.valueOf(currentBuffer.getMax())) > 0 ;
     }
 
     @Override
@@ -118,9 +133,10 @@ public abstract class AbstractSegmentIdGenerator extends AbstractIdGenerator<Seg
     }
 
     @Override
-    protected void romoteLoadNextBuffer(String bizTag, BaseBuffer baseBuffer) {
+    protected void romoteLoadNextBuffer(String bizTag) {
         //远程调用服务获取segment
-        SegmentBuffer segmentBuffer = (SegmentBuffer) baseBuffer;
+        SegmentBuffer segmentBuffer = (SegmentBuffer) baseMap.get(bizTag);
+
         SegmentId segmentId = idService.getSegmentId(bizTag);
         Segment segment = new Segment(segmentBuffer);
         segment.setMax(segmentId.getMaxId());

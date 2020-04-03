@@ -25,6 +25,11 @@ public class AllocEntity {
     @Column(name = "step")
     private Integer step;
 
+    /** 号段步长 */
+    @Version
+    @Column(name = "version")
+    private Long version;
+
     /** 创建时间 */
     @Column(name = "create_time")
     private Date createTime;
@@ -80,5 +85,13 @@ public class AllocEntity {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 }

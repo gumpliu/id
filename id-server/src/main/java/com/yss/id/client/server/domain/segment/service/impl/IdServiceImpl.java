@@ -37,24 +37,32 @@ public class IdServiceImpl implements IdService {
     public SegmentId getSegment(String bizTag) {
 
         //todo 是否在server端做重试机制
+        SegmentId segment = null;
 
-        AllocEntity allocEntity = allocRepository.findByBizTag(bizTag);
-        int step = idServerProperties.getSegement().getStep();
-        Date now = new Date();
-        if(allocEntity == null){
-            allocEntity = new AllocEntity();
-            allocEntity.setBizTag(bizTag);
-            allocEntity.setMaxId(BigInteger.ZERO);
-            allocEntity.setStep(idServerProperties.getSegement().getStep());
-            allocEntity.setCreateTime(now);
-            allocEntity.setUpdateTime(now);
-            allocRepository.save(allocEntity);
+        for(;;){
+            AllocEntity allocEntity = allocRepository.findByBizTag(bizTag);
+            int step = idServerProperties.getSegement().getStep();
+            Date now = new Date();
+            if(allocEntity == null){
+                allocEntity = new AllocEntity();
+                allocEntity.setBizTag(bizTag);
+                allocEntity.setMaxId(BigInteger.ZERO);
+                allocEntity.setStep(idServerProperties.getSegement().getStep());
+                allocEntity.setCreateTime(now);
+                allocEntity.setUpdateTime(now);
+                allocEntity.setVersion(BigInteger.ONE.longValue());
+                allocRepository.save(allocEntity);
+            }
+
+            int updateNum = allocRepository.updateByBizTag(bizTag, allocEntity.getVersion());
+
+            if(updateNum == 1){
+                segment =  new SegmentId();
+                segment.setMaxId(allocEntity.getMaxId().add(BigInteger.valueOf(step)).longValue());
+                segment.setStep(step);
+                break;
+            }
         }
-
-        SegmentId segment = new SegmentId();
-        segment.setMaxId(allocEntity.getMaxId().add(BigInteger.valueOf(step)).longValue());
-        segment.setStep(step);
-        allocRepository.updateByBizTag(bizTag);
 
         return segment;
     }

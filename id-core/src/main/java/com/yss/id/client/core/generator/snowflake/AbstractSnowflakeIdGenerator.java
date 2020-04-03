@@ -28,6 +28,11 @@ public abstract class AbstractSnowflakeIdGenerator extends AbstractIdGenerator<Q
     }
 
     @Override
+    protected  BaseBuffer createBaseBuffer(String bizTag){
+        return null;
+    }
+
+
     protected String nextId(Queue currentBuffer) {
         return null;
     }
@@ -57,7 +62,7 @@ public abstract class AbstractSnowflakeIdGenerator extends AbstractIdGenerator<Q
     }
 
     @Override
-    protected void romoteLoadNextBuffer(String bizTag, BaseBuffer baseBuffer) {
+    protected void romoteLoadNextBuffer(String bizTag) {
 
     }
 

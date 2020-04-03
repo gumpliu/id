@@ -32,13 +32,17 @@ public abstract class AbstractIdGenerator<T> {
 
         BaseBuffer<T> baseBuffer = getBuffer(bizTag);
 
-        String nextId = nextId(baseBuffer.getCurrent());
-        //获取下一缓存
-        loadNextBuffer(bizTag);
-        //nextId 等于maxId时，切换缓存
-        if(switchBufer(baseBuffer.getCurrent())){
-            baseBuffer.switchPos();
-            baseBuffer.setAlreadyLoadBuffer(false);
+        String nextId = "";
+
+        synchronized (baseBuffer){
+            nextId = nextId(baseBuffer.getCurrent());
+            //获取下一缓存
+            loadNextBuffer(bizTag);
+            //nextId 等于maxId时，切换缓存
+            if(switchBufer(baseBuffer.getCurrent())){
+                baseBuffer.switchPos();
+                baseBuffer.setAlreadyLoadBuffer(false);
+            }
         }
 
         return nextId;
@@ -79,13 +83,12 @@ public abstract class AbstractIdGenerator<T> {
                 if(baseMap.get(bizTag) != null){
                     return baseMap.get(bizTag);
                 }
-                baseMap.put(bizTag, new BaseBuffer());
+                baseBuffer = createBaseBuffer(bizTag);
 
-                romoteLoadNextBuffer(bizTag, baseMap.get(bizTag));
+                baseMap.put(bizTag, baseBuffer);
             }
         }
         return baseBuffer;
-
     }
 
     /**
@@ -108,7 +111,7 @@ public abstract class AbstractIdGenerator<T> {
             synchronized (baseBuffer){
                 if(!baseBuffer.isAlreadyLoadBuffer()){
                     //远程调用服务获取segment
-                    romoteLoadNextBuffer(bizTag, baseBuffer);
+                    romoteLoadNextBuffer(bizTag);
 
                     baseBuffer.setAlreadyLoadBuffer(true);
                 }
@@ -116,6 +119,14 @@ public abstract class AbstractIdGenerator<T> {
             }
         }
     }
+
+    /**
+     * 初始化baseBuffer
+     * @param bizTag
+     * @return
+     */
+    protected abstract BaseBuffer createBaseBuffer(String bizTag);
+
 
     /**
      * 根据当前缓存获取id
@@ -145,8 +156,7 @@ public abstract class AbstractIdGenerator<T> {
      * 远程获取缓存内容
      *
      * @param bizTag
-     * @param baseBuffer
      */
-    protected abstract void romoteLoadNextBuffer(String bizTag,  BaseBuffer baseBuffer);
+    protected abstract void romoteLoadNextBuffer(String bizTag);
 
 }
