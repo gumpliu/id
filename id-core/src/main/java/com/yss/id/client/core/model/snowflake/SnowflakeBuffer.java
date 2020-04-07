@@ -18,5 +18,20 @@ public class SnowflakeBuffer extends BaseBuffer<Queue> {
         buffers =  new ConcurrentLinkedQueue[]{new ConcurrentLinkedQueue(), null};
     }
 
+    @Override
+    public String nextId(Queue currentBuffer) {
+        return null;
+    }
+
+    @Override
+    public boolean switchBufer(Queue currentBuffer) {
+        return false;
+    }
+
+    @Override
+    public boolean isloadNextBuffer(Queue currentBuffer, Queue nextBuffer) {
+        return false;
+    }
+
 
 }

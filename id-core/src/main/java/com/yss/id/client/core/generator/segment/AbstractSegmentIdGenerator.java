@@ -1,22 +1,15 @@
 package com.yss.id.client.core.generator.segment;
 
-import com.alibaba.fastjson.JSON;
-import com.yss.id.client.core.Constants;
-import com.yss.id.client.core.exception.IdException;
 import com.yss.id.client.core.generator.AbstractIdGenerator;
 import com.yss.id.client.core.model.BaseBuffer;
 import com.yss.id.client.core.model.SegmentId;
 import com.yss.id.client.core.model.segment.Segment;
 import com.yss.id.client.core.model.segment.SegmentBuffer;
 import com.yss.id.client.core.service.IdService;
+import com.yss.id.client.core.util.MathUtil;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -27,7 +20,7 @@ import java.util.concurrent.atomic.AtomicLong;
  **/
 public abstract class AbstractSegmentIdGenerator extends AbstractIdGenerator<Segment> implements IdSegmentGenerator {
 
-    private Map<String, Long> maxValueMap = new ConcurrentHashMap<String, Long>();
+    private Map<String, Integer> bizTagLenMap = new ConcurrentHashMap<String, Integer>();
 
     public AbstractSegmentIdGenerator(IdService idService) {
         super(idService);
@@ -51,6 +44,8 @@ public abstract class AbstractSegmentIdGenerator extends AbstractIdGenerator<Seg
      * @return
      */
     public String fixedLengthNextId(String bizTag, int length){
+        //todo 隐式为bizTag -> length
+        putBizTagLen(bizTag, length);
 
         SegmentBuffer segmentBuffer = (SegmentBuffer) getBuffer(bizTag);
 
@@ -61,11 +56,12 @@ public abstract class AbstractSegmentIdGenerator extends AbstractIdGenerator<Seg
             segment.getValue().incrementAndGet();
 
             //nextId超过位数最大值，segment重新初始化
-            if(segment.getValue().get() > maxValue(bizTag, length)){
+            if(segment.getValue().get() > MathUtil.maxValue(bizTag, length)){
                 SegmentId segmentId = idService.initSegmentId(bizTag);
                 segment.setMax(segmentId.getMaxId());
                 segment.setStep(segmentId.getStep());
-
+                AtomicLong currentId = new AtomicLong(segment.getMax() - segment.getStep());
+                segment.setValue(currentId);
                 //另一缓存设置为空
                 if(segmentBuffer.getBuffers()[segmentBuffer.nextPos()] != null){
                     segmentBuffer.getBuffers()[segmentBuffer.nextPos()] = null;
@@ -78,58 +74,28 @@ public abstract class AbstractSegmentIdGenerator extends AbstractIdGenerator<Seg
             //获取下一缓存
             loadNextBuffer(bizTag);
             //nextId 等于maxId时，切换缓存
-            if(switchBufer(segment)){
+            if(segmentBuffer.switchBufer(segment)){
                 segmentBuffer.switchPos();
                 segmentBuffer.setAlreadyLoadBuffer(false);
             }
 
-            return appendZero(segment.getValue().toString(), length);
+            return MathUtil.appendZero(segment.getValue().toString(), length);
         }
     }
+
 
     @Override
     public BaseBuffer createBaseBuffer(String bizTag) {
         //远程调用服务获取segment
-        SegmentId segmentId = idService.getSegmentId(bizTag);
-
         SegmentBuffer segmentBuffer = new SegmentBuffer();
-        Segment segment = segmentBuffer.getCurrent();
-        segment.setMax(segmentId.getMaxId());
-        segment.setStep(segmentId.getStep());
-        AtomicLong currentId = new AtomicLong(segment.getMax() - segment.getStep());
-        segment.setValue(currentId);
+        segmentBuffer.setKey(bizTag);
+        segmentBuffer.setMaxLength(bizTagLenMap.get(bizTag));
+
+        Segment segment = getSegmentId(segmentBuffer);
+
+        segmentBuffer.getBuffers()[segmentBuffer.getCurrentPos()] = segment;
+
         return segmentBuffer;
-    }
-
-
-    @Override
-    protected String nextId(Segment currentBuffer) {
-
-        return String.valueOf(currentBuffer.getValue().incrementAndGet());
-    }
-
-    @Override
-    protected boolean switchBufer(Segment currentBuffer) {
-        //todo BigInteger  BigDecimal 超长计算
-        return BigDecimal.valueOf(currentBuffer.getValue().get()).compareTo(BigDecimal.valueOf(currentBuffer.getMax())) > 0 ;
-    }
-
-    @Override
-    protected boolean isloadNextBuffer(Segment currentBuffer, Segment nextBuffer) {
-
-        //已经获取下一缓存信息
-        if(nextBuffer != null && nextBuffer.getMax() > currentBuffer.getMax()){
-            return false;
-        }
-
-        long initValue = currentBuffer.getMax() - currentBuffer.getStep();
-
-        BigDecimal currentThreshold = BigDecimal.valueOf(currentBuffer.getValue().get() - initValue)
-                                    .divide(BigDecimal.valueOf(currentBuffer.getStep()))
-                                    .setScale(2, BigDecimal.ROUND_HALF_UP)
-                                    .multiply(BigDecimal.valueOf(100));
-
-        return currentThreshold.intValue() > Constants.ID_THRESHOLDVALUE;
     }
 
     @Override
@@ -137,59 +103,41 @@ public abstract class AbstractSegmentIdGenerator extends AbstractIdGenerator<Seg
         //远程调用服务获取segment
         SegmentBuffer segmentBuffer = (SegmentBuffer) baseMap.get(bizTag);
 
-        SegmentId segmentId = idService.getSegmentId(bizTag);
+        Segment segment = getSegmentId(segmentBuffer);
+
+        segmentBuffer.getBuffers()[segmentBuffer.nextPos()] = segment;
+    }
+
+
+    /**
+     * 获取segmentId
+     * @param segmentBuffer
+     * @return
+     */
+    private Segment getSegmentId(SegmentBuffer segmentBuffer){
+        SegmentId segmentId;
+
+        String bizTag = segmentBuffer.getKey();
+
+        if(bizTagLenMap.containsKey(bizTag)){
+            segmentId = idService.getSegmentId(bizTag, segmentBuffer.getMaxLength());
+        }else{
+            segmentId = idService.getSegmentId(bizTag);
+        }
+
         Segment segment = new Segment(segmentBuffer);
         segment.setMax(segmentId.getMaxId());
         segment.setStep(segmentId.getStep());
         AtomicLong currentId = new AtomicLong(segment.getMax() - segment.getStep());
         segment.setValue(currentId);
-        segmentBuffer.getBuffers()[segmentBuffer.nextPos()] = segment;
+
+        return segment;
     }
 
-    /**
-     * 获取位数为length的最大值
-     * @param length
-     * @return
-     */
-    private long maxValue(String bizTag, int length){
 
-        String maxValueKey = bizTag + length;
-        Long maxValue =  maxValueMap.get(maxValueKey);
-
-        if(maxValue == null){
-
-            StringBuffer initValue = new StringBuffer();
-            for(int i = 0; i < length; i++){
-                initValue.append(9);
-            }
-            maxValueMap.put(maxValueKey, Long.parseLong(initValue.toString()));
-            maxValue = maxValueMap.get(maxValueKey);
-        }
-
-        return maxValue;
-    }
-
-    /**
-     * 拼接0
-     * @param id
-     * @param length
-     * @return
-     */
-    private String appendZero(String id, int length){
-
-        if(id.length() == length){
-            return id;
-        }
-        int differenceValue = length - id.length();
-        if(differenceValue > 0 ){
-            StringBuffer initValue = new StringBuffer();
-            for(int i = 0; i < differenceValue; i++ ){
-                initValue.append("0");
-            }
-            return id + initValue.toString();
-        }else{
-            //todo 定义自己异常
-            throw new IdException("id length is error !!");
+    private void putBizTagLen(String bizTag, int length){
+        if(!bizTagLenMap.containsKey(bizTag)){
+            bizTagLenMap.put(bizTag, length);
         }
     }
 }

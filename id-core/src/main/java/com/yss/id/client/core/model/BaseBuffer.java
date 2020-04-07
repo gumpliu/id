@@ -3,7 +3,7 @@ package com.yss.id.client.core.model;
 /**
  * 双buffer
  */
-public class BaseBuffer<T> {
+public abstract class BaseBuffer<T> {
     private String key;
     protected T[] buffers;
     private volatile int currentPos; //当前的使用的segment的index
@@ -16,6 +16,32 @@ public class BaseBuffer<T> {
     public BaseBuffer() {
         currentPos = 0;
     }
+
+
+    /**
+     * 根据当前缓存获取id
+     * @param currentBuffer
+     * @return
+     */
+    public abstract String nextId(T currentBuffer);
+
+    /**
+     * 是否切换至下一缓存，当id消耗完后切换
+     *
+     * @param currentBuffer
+     * @return
+     */
+    public  abstract boolean switchBufer(T currentBuffer);
+
+    /**
+     * 是否需要获取二级缓存
+     *
+     * @param currentBuffer
+     * @param nextBuffer
+     * @return
+     */
+    public abstract boolean isloadNextBuffer(T currentBuffer, T nextBuffer);
+
 
     public String getKey() {
         return key;

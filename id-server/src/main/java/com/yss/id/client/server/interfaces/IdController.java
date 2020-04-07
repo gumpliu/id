@@ -36,4 +36,33 @@ public class IdController {
         return segmentService.getSegment(bizTag);
     }
 
+    /**
+     * 获取segment，当前号段 maxId > 最大值时，初始化号段。
+     * 例：maxLength = 4，最大值为9999。
+     * 如当前maxId > 9999时，初始化号段并返回初始化后的maxId(即step值)
+     *
+     * @param bizTag
+     * @param length 最大长度
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value="/segment/{bizTag}/{length}", method = RequestMethod.POST, produces="application/json")
+    public SegmentId getSegment(@PathVariable String bizTag,
+                                @PathVariable int length) {
+
+        return segmentService.getSegment(bizTag, length);
+    }
+
+    /**
+     * 初始化号段并返回初始号段值
+     * @param bizTag
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value="/initSegment/{bizTag}", method = RequestMethod.POST, produces="application/json")
+    public SegmentId initSegment(@PathVariable String bizTag) {
+
+        return segmentService.initSegment(bizTag);
+    }
+
 }

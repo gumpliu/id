@@ -11,4 +11,10 @@ public class Constants {
     //雪花模式唯一缓存key
     public static final String SNOWFLAKE_KEY = "SONWFLAKE_UNIQUENESS_KEY";
 
+    public static final String SEGEMNT_URL = "{0}/id/segment/{1}";
+
+    public static final String SEGEMNT_FIEXD_URL = "{0}/id/segment/{1}/{2}";
+
+    public static final String SEGEMNT_INIT_URL = "{0}/id/initSegment/{1}";
+
 }

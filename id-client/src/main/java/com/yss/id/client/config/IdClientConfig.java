@@ -4,6 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * @Description: idClient相关配置
+ * //todo 添加执行eruake/fegin
  * @Author gumpLiu
  * @Date 2020-03-26
  * @Version V1.0

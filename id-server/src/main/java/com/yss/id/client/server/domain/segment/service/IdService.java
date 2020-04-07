@@ -15,4 +15,23 @@ public interface IdService {
      */
     SegmentId getSegment(String bizTag);
 
+    /**
+     * 获取segment，当前号段 maxId > 最大值时，初始化号段。
+     * 例：maxLength = 4，最大值为9999。
+     * 如当前maxId > 9999时，初始化号段并返回初始化后的maxId(即step值)
+     *
+     * @param bizTag
+     * @param length
+     * @return
+     */
+    SegmentId getSegment(String bizTag, int length);
+
+    /**
+     * 初始化号段值
+     *
+     * @param bizTag
+     * @return
+     */
+    SegmentId initSegment(String bizTag);
+
 }

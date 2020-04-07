@@ -2,12 +2,14 @@ package com.yss.id.client.service;
 
 import com.alibaba.fastjson.JSON;
 import com.yss.id.client.config.IdClientConfig;
+import com.yss.id.client.core.Constants;
 import com.yss.id.client.core.model.SegmentId;
 import com.yss.id.client.core.service.IdService;
 import com.yss.id.client.core.util.HttpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -28,7 +30,39 @@ public class HttpIdServiceImpl implements IdService {
 
     @Override
     public SegmentId getSegmentId(String bizTag) {
-        String url = chooseService(bizTag);
+        String url = MessageFormat.format(Constants.SEGEMNT_URL, chooseService(), bizTag);
+
+        return remoteLoadSegment(url);
+    }
+
+    @Override
+    public SegmentId getSegmentId(String bizTag, int length) {
+        String url = MessageFormat.format(Constants.SEGEMNT_FIEXD_URL, chooseService(), bizTag, length);
+
+        return remoteLoadSegment(url);
+    }
+
+    @Override
+    public SegmentId initSegmentId(String bizTag) {
+
+        String url = MessageFormat.format(Constants.SEGEMNT_INIT_URL, chooseService(), bizTag);
+
+        return remoteLoadSegment(url);
+    }
+
+    @Override
+    public List<String> getSnowflakeId() {
+        return null;
+    }
+
+
+    /**
+     * 远程通过http调用id-server服务
+     *
+     * @param url
+     * @return
+     */
+    private SegmentId remoteLoadSegment(String url){
         String response = HttpUtils.post(url,10000, 1000);
         logger.info("tinyId client getNextSegmentId end, response:" + response);
         if (response == null || "".equals(response.trim())) {
@@ -39,18 +73,11 @@ public class HttpIdServiceImpl implements IdService {
         return segmentId;
     }
 
-    @Override
-    public SegmentId initSegmentId(String bizTag) {
-        return null;
-    }
-
-    @Override
-    public List<String> getSnowflakeId() {
-        return null;
-    }
-
-
-    private String chooseService(String bizType) {
+    /**
+     * 获取配置url地址
+     * @return
+     */
+    private String chooseService() {
         String urls = clientConfig.getServer().getUrl();
 
         List<String> serverList = CollectionUtils.arrayToList(urls.split(","));
@@ -62,7 +89,7 @@ public class HttpIdServiceImpl implements IdService {
             Random r = new Random();
             url = serverList.get(r.nextInt(serverList.size()));
         }
-        url += "/" + bizType;
+
         return url;
     }
 

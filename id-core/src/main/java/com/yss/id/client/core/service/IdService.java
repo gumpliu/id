@@ -21,6 +21,15 @@ public interface IdService {
     SegmentId getSegmentId(String bizTag);
 
     /**
+     * 获取SegmentId
+     *
+     * @param bizTag 业务类型
+     * @param length maxId最大长度
+     * @return
+     */
+    SegmentId getSegmentId(String bizTag, int length);
+
+    /**
      * 初始segmentId
      *
      * @param bizTag 业务类型

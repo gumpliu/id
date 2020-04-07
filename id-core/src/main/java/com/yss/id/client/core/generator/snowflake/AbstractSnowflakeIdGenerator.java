@@ -37,11 +37,6 @@ public abstract class AbstractSnowflakeIdGenerator extends AbstractIdGenerator<Q
         return null;
     }
 
-    @Override
-    protected boolean switchBufer(Queue currentBuffer) {
-        return false;
-    }
-
     /**
      * 获取 nextId
      *
@@ -54,11 +49,6 @@ public abstract class AbstractSnowflakeIdGenerator extends AbstractIdGenerator<Q
         Queue queue = snowflakeBuffer.getCurrent();
 
         return "";
-    }
-
-    @Override
-    protected boolean isloadNextBuffer(Queue currentBuffer, Queue nextBuffer) {
-        return false;
     }
 
     @Override
