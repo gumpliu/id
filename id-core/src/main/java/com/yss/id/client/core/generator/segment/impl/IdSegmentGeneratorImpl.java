@@ -1,6 +1,7 @@
 package com.yss.id.client.core.generator.segment.impl;
 
-import com.yss.id.client.core.generator.segment.AbstractSegmentIdGenerator;
+import com.yss.id.client.core.generator.segment.SegmentBufferIdGenerator;
+import com.yss.id.client.core.generator.segment.IdSegmentGenerator;
 import com.yss.id.client.core.service.IdService;
 
 /**
@@ -9,7 +10,7 @@ import com.yss.id.client.core.service.IdService;
  * @Date 2020-03-30
  * @Version V1.0
  **/
-public class IdSegmentGeneratorImpl extends AbstractSegmentIdGenerator {
+public class IdSegmentGeneratorImpl extends SegmentBufferIdGenerator implements IdSegmentGenerator {
 
     public IdSegmentGeneratorImpl(IdService idService) {
         super(idService);
