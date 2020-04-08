@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.yss.id.client.config.IdClientConfig;
 import com.yss.id.client.core.Constants;
 import com.yss.id.client.core.model.SegmentId;
+import com.yss.id.client.core.model.SnowflakeId;
 import com.yss.id.client.core.service.IdService;
 import com.yss.id.client.core.util.HttpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,8 +52,12 @@ public class HttpIdServiceImpl implements IdService {
     }
 
     @Override
-    public List<String> getSnowflakeId() {
-        return null;
+    public SnowflakeId getSnowflakeId() {
+
+        String url = MessageFormat.format(Constants.SWONFLAKE_URL, chooseService());
+
+
+        return remoteLoadSnowflake(url);
     }
 
 
@@ -64,13 +69,29 @@ public class HttpIdServiceImpl implements IdService {
      */
     private SegmentId remoteLoadSegment(String url){
         String response = HttpUtils.post(url,10000, 1000);
-        logger.info("tinyId client getNextSegmentId end, response:" + response);
+        logger.info("id client remoteLoadSegment end, response:" + response);
         if (response == null || "".equals(response.trim())) {
             return null;
         }
         SegmentId segmentId  = JSON.parseObject(response, SegmentId.class);
 
         return segmentId;
+    }
+
+    /**
+     * 远程通过http调用id-server服务
+     *
+     * @param url
+     * @return
+     */
+    private SnowflakeId remoteLoadSnowflake(String url){
+        String response = HttpUtils.post(url,10000, 1000);
+        logger.info("id client remoteLoadSnowflake end, response:" + response);
+        if (response == null || "".equals(response.trim())) {
+            return null;
+        }
+
+        return JSON.parseObject(response, SnowflakeId.class);
     }
 
     /**

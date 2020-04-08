@@ -101,7 +101,7 @@ public abstract class AbstractIdGenerator<T> {
 
         T currentBuffer = (T) baseBuffer.getCurrent();
 
-        T nextBuffer = (T) baseBuffer.getBuffers()[baseBuffer.getCurrentPos()];
+        T nextBuffer = (T) baseBuffer.getBuffers()[baseBuffer.nextPos()];
 
         //是否需要获取下一缓存，维护nextReady状态
 

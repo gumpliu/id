@@ -17,4 +17,6 @@ public class Constants {
 
     public static final String SEGEMNT_INIT_URL = "{0}/id/initSegment/{1}";
 
+    public static final String SWONFLAKE_URL = "{0}/id/snowflake";
+
 }

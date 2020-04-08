@@ -6,7 +6,7 @@ import com.yss.id.client.core.model.SegmentId;
  * @Author: gumpLiu
  * @Date: 2020-03-24 10:21
  */
-public interface IdService {
+public interface SegmentIdService {
 
     /**
      * 根据bizTag获取最大maxId及step

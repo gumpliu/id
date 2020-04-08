@@ -6,13 +6,12 @@ import com.yss.id.client.core.util.MathUtil;
 import com.yss.id.client.server.config.IdServerProperties;
 import com.yss.id.client.server.domain.segment.entity.AllocEntity;
 import com.yss.id.client.server.domain.segment.repository.AllocRepository;
-import com.yss.id.client.server.domain.segment.service.IdService;
+import com.yss.id.client.server.domain.segment.service.SegmentIdService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 
@@ -23,7 +22,7 @@ import java.util.Date;
  * @Version V1.0
  **/
 @Service
-public class IdServiceImpl implements IdService {
+public class SegmentIdServiceImpl implements SegmentIdService {
 
     @Autowired
     IdServerProperties idServerProperties;

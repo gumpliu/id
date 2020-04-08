@@ -1,7 +1,9 @@
 package com.yss.id.client.server.interfaces;
 
 import com.yss.id.client.core.model.SegmentId;
-import com.yss.id.client.server.domain.segment.service.IdService;
+import com.yss.id.client.core.model.SnowflakeId;
+import com.yss.id.client.server.domain.segment.service.SegmentIdService;
+import com.yss.id.client.server.domain.snowflake.SnowflakeIdService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,7 +24,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class IdController {
 
     @Autowired
-    IdService segmentService;
+    SegmentIdService segmentService;
+
+    @Autowired
+    SnowflakeIdService snowflakeIdService;
 
     /**
      * 获取segment
@@ -63,6 +68,18 @@ public class IdController {
     public SegmentId initSegment(@PathVariable String bizTag) {
 
         return segmentService.initSegment(bizTag);
+    }
+
+    /**
+     * 雪花模式 ids
+     *
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value="/snowflake", method = RequestMethod.POST, produces="application/json")
+    public SnowflakeId snowflake() {
+
+        return snowflakeIdService.getIds();
     }
 
 }

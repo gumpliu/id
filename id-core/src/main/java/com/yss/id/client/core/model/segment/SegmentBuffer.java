@@ -45,7 +45,8 @@ public class SegmentBuffer extends BaseBuffer<Segment> {
 
         long initValue = currentBuffer.getMax() - currentBuffer.getStep();
 
-        BigDecimal currentThreshold = BigDecimal.valueOf(currentBuffer.getValue().get() - initValue)
+        BigDecimal currentThreshold = BigDecimal.valueOf(currentBuffer.getValue().get())
+                .subtract(BigDecimal.valueOf(initValue))
                 .divide(BigDecimal.valueOf(currentBuffer.getStep()))
                 .setScale(2, BigDecimal.ROUND_HALF_UP)
                 .multiply(BigDecimal.valueOf(100));

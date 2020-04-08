@@ -1,8 +1,7 @@
 package com.yss.id.client.core.service;
 
 import com.yss.id.client.core.model.SegmentId;
-
-import java.util.List;
+import com.yss.id.client.core.model.SnowflakeId;
 
 /**
  * @Description: 获取号段及雪花模式ids
@@ -42,5 +41,5 @@ public interface IdService {
      *
      * @return
      */
-    List<String> getSnowflakeId();
+    SnowflakeId getSnowflakeId();
 }

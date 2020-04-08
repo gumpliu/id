@@ -23,6 +23,6 @@ public class IdSnowflakeGeneratorImpl extends SnowflakeBufferIdGenerator impleme
 
     @Override
     public String getSnowflakeNextId(Enum format) {
-        return formatNextId();
+        return "";
     }
 }
