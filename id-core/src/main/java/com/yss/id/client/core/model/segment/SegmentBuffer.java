@@ -59,8 +59,8 @@ public class SegmentBuffer extends BaseBuffer<Segment> {
         return maxLength;
     }
 
-    public void setMaxLength(int maxLength) {
-        this.maxLength = maxLength;
+    public void setMaxLength(Integer maxLength) {
+        this.maxLength = maxLength == null ? 0 : maxLength;
     }
 
 }

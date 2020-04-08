@@ -39,6 +39,8 @@ public class SegmentIdServiceImpl implements SegmentIdService {
     @Transactional
     public SegmentId getSegment(String bizTag) {
 
+        enable();
+
         //todo 是否在server端做重试机制
         for(int i = 0; i < 5; i++){
             AllocEntity allocEntity = getAllocEntity(bizTag);
@@ -55,6 +57,8 @@ public class SegmentIdServiceImpl implements SegmentIdService {
     @Override
     @Transactional
     public SegmentId getSegment(String bizTag, int length) {
+
+        enable();
 
         long maxValue  = MathUtil.maxValue(bizTag, length);
 
@@ -85,6 +89,8 @@ public class SegmentIdServiceImpl implements SegmentIdService {
     @Override
     @Transactional
     public SegmentId initSegment(String bizTag) {
+
+        enable();
 
         for(int i = 0; i < 5; i++){
             AllocEntity allocEntity = getAllocEntity(bizTag);
@@ -159,6 +165,13 @@ public class SegmentIdServiceImpl implements SegmentIdService {
         int step = idServerProperties.getSegement().getStep();
 
         return new SegmentId(currentMaxId.add(BigInteger.valueOf(step)).longValue(), step, maxLength);
+    }
+
+    private void enable(){
+        if(!idServerProperties.getSegement().isEnable()){
+            //todo 指定错误码
+            throw new IdException("segment 模式不可用");
+        }
     }
 
 }

@@ -82,7 +82,7 @@ public abstract class AbstractIdGenerator<T> {
                 if(baseMap.get(bizTag) != null){
                     return baseMap.get(bizTag);
                 }
-                baseBuffer = createBaseBuffer(bizTag);
+                baseBuffer =  createBaseBuffer(bizTag);
 
                 baseMap.put(bizTag, baseBuffer);
             }

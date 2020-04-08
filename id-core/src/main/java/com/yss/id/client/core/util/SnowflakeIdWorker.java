@@ -1,6 +1,8 @@
 package com.yss.id.client.core.util;
 
-import org.apache.commons.beanutils.locale.LocaleBeanUtils;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * 生成分布式系统唯一的主键id
@@ -147,5 +149,14 @@ public class SnowflakeIdWorker {
             long workerId = worker.genNextId();
             System.out.println(workerId);
         }
+        String time="2015-01-01 00:00:00";
+        Date date=null;
+        SimpleDateFormat formatter=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            date= formatter.parse(time);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        System.out.println(date.getTime());
     }
 }

@@ -1,5 +1,6 @@
 package com.yss.id.client.server.domain.snowflake.impl;
 
+import com.yss.id.client.core.exception.IdException;
 import com.yss.id.client.core.model.SnowflakeId;
 import com.yss.id.client.core.util.SnowflakeIdWorker;
 import com.yss.id.client.server.config.IdServerProperties;
@@ -28,6 +29,8 @@ public class SnowflakeSerivceImpl implements SnowflakeIdService {
 
     @Override
     public SnowflakeId getIds() {
+        //todo 统一处理
+        enable();
 
         int step = idServerProperties.getSnowflake().getStep();
 
@@ -38,5 +41,12 @@ public class SnowflakeSerivceImpl implements SnowflakeIdService {
         }
 
         return new SnowflakeId(ids, step);
+    }
+
+    private void enable(){
+        if(!idServerProperties.getSnowflake().isEnable()){
+            //todo 指定错误码
+            throw new IdException("snowflake 模式不可用");
+        }
     }
 }
