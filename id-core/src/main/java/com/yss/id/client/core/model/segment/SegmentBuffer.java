@@ -31,9 +31,9 @@ public class SegmentBuffer extends BaseBuffer<Segment> {
         boolean isFiexdSwitch = true;
         if(maxLength > 0){
             isFiexdSwitch = BigDecimal.valueOf(currentBuffer.getValue().get()).
-                    compareTo(BigDecimal.valueOf(MathUtil.maxValue(currentBuffer.getBuffer().getKey(), maxLength))) > 0;
+                    compareTo(BigDecimal.valueOf(MathUtil.maxValue(currentBuffer.getBuffer().getKey(), maxLength))) >= 0;
         }
-        return BigDecimal.valueOf(currentBuffer.getValue().get()).compareTo(BigDecimal.valueOf(currentBuffer.getMax())) > 0 && isFiexdSwitch;
+        return BigDecimal.valueOf(currentBuffer.getValue().get()).compareTo(BigDecimal.valueOf(currentBuffer.getMax())) >= 0 && isFiexdSwitch;
     }
 
     @Override

@@ -61,7 +61,6 @@ public class HttpIdServiceImpl implements IdService {
         return remoteLoadSnowflake(url);
     }
 
-
     /**
      * 远程通过http调用id-server服务
      *
@@ -69,7 +68,8 @@ public class HttpIdServiceImpl implements IdService {
      * @return
      */
     private SegmentId remoteLoadSegment(String url){
-        String response = HttpUtils.post(url,10000, 1000);
+        //todo 添加重试机制
+        String response = HttpUtils.post(url,5000, 5000);
         logger.info("id client remoteLoadSegment end, response:" + response);
         if (response == null || "".equals(response.trim())) {
             return null;
@@ -86,7 +86,7 @@ public class HttpIdServiceImpl implements IdService {
      * @return
      */
     private SnowflakeId remoteLoadSnowflake(String url){
-        String response = HttpUtils.post(url,10000, 1000);
+        String response = HttpUtils.post(url,5000, 5000);
         logger.info("id client remoteLoadSnowflake end, response:" + response);
         if (response == null || "".equals(response.trim())) {
             return null;
