@@ -1,5 +1,7 @@
 package com.yss.id.client.server.interfaces;
 
+import com.yss.id.client.core.constans.IDFormatEnum;
+import com.yss.id.client.core.exception.IdException;
 import com.yss.id.client.core.model.SegmentId;
 import com.yss.id.client.core.model.SnowflakeId;
 import com.yss.id.client.server.domain.segment.service.SegmentIdService;
@@ -76,10 +78,16 @@ public class IdController {
      * @return
      */
     @ResponseBody
-    @RequestMapping(value="/snowflake", method = RequestMethod.POST, produces="application/json")
-    public SnowflakeId snowflake() {
+    @RequestMapping(value="/snowflake/{format}", method = RequestMethod.POST, produces="application/json")
+    public SnowflakeId snowflake(@PathVariable  String format) {
 
-        return snowflakeIdService.getIds();
+        IDFormatEnum idFormat = IDFormatEnum.valueOf(format);
+
+        if(idFormat == null){
+            throw new IdException("id format is error! ");
+        }
+
+        return snowflakeIdService.getIds(idFormat);
     }
 
 }

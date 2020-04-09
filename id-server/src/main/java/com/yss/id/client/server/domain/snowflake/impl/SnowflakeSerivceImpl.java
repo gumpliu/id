@@ -1,8 +1,8 @@
 package com.yss.id.client.server.domain.snowflake.impl;
 
+import com.yss.id.client.core.constans.IDFormatEnum;
 import com.yss.id.client.core.exception.IdException;
 import com.yss.id.client.core.model.SnowflakeId;
-import com.yss.id.client.core.util.SnowflakeIdWorker;
 import com.yss.id.client.server.config.IdServerProperties;
 import com.yss.id.client.server.domain.snowflake.SnowflakeIdService;
 import com.yss.id.client.server.domain.snowflake.SnowflakeIdWorkerFactory;
@@ -24,11 +24,8 @@ public class SnowflakeSerivceImpl implements SnowflakeIdService {
     @Autowired
     private IdServerProperties idServerProperties;
 
-    private SnowflakeIdWorker worker = SnowflakeIdWorkerFactory.getInstance();
-
-
     @Override
-    public SnowflakeId getIds() {
+    public SnowflakeId getIds(IDFormatEnum format) {
         //todo 统一处理
         enable();
 
@@ -37,7 +34,7 @@ public class SnowflakeSerivceImpl implements SnowflakeIdService {
         List<String> ids = new ArrayList<String>();
 
         for(int i = 0; i < step; i++){
-            ids.add(String.valueOf(worker.genNextId()));
+            ids.add(String.valueOf(SnowflakeIdWorkerFactory.getInstance(format).genNextId(format)));
         }
 
         return new SnowflakeId(ids, step);

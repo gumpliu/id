@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 
@@ -45,7 +46,7 @@ public class SegmentIdServiceImpl implements SegmentIdService {
         for(int i = 0; i < 5; i++){
             AllocEntity allocEntity = getAllocEntity(bizTag);
 
-            int updateNum = allocRepository.updateByBizTag(bizTag, allocEntity.getVersion());
+            int updateNum = allocRepository.updateByBizTag(bizTag, getStep(), allocEntity.getVersion());
 
             if(updateNum == 1){
                 return createSegmentId(allocEntity.getMaxId());
@@ -70,11 +71,11 @@ public class SegmentIdServiceImpl implements SegmentIdService {
             int updateNum;
             if(MathUtil.greaterThanEqual(allocEntity.getMaxId().longValue(), maxValue)){
                 //初始化segment
-                updateNum = allocRepository.initSegmentByBizTag(bizTag, allocEntity.getVersion());
+                updateNum = allocRepository.initSegmentByBizTag(bizTag, getStep(), allocEntity.getVersion());
 
                 maxId = BigInteger.ZERO;
             }else{
-                updateNum = allocRepository.updateByBizTag(bizTag, allocEntity.getVersion());
+                updateNum = allocRepository.updateByBizTag(bizTag, getStep(), allocEntity.getVersion());
             }
 
             if(updateNum == 1){
@@ -95,7 +96,7 @@ public class SegmentIdServiceImpl implements SegmentIdService {
         for(int i = 0; i < 5; i++){
             AllocEntity allocEntity = getAllocEntity(bizTag);
 
-            int updateNum = allocRepository.initSegmentByBizTag(bizTag, allocEntity.getVersion());
+            int updateNum = allocRepository.initSegmentByBizTag(bizTag, getStep(), allocEntity.getVersion());
 
             if(updateNum == 1){
                 return createSegmentId(BigInteger.ZERO);
@@ -172,6 +173,10 @@ public class SegmentIdServiceImpl implements SegmentIdService {
             //todo 指定错误码
             throw new IdException("segment 模式不可用");
         }
+    }
+
+    private BigInteger getStep(){
+        return BigInteger.valueOf(idServerProperties.getSegement().getStep());
     }
 
 }

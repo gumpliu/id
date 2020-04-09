@@ -1,5 +1,6 @@
 package com.yss.id.client.core.service;
 
+import com.yss.id.client.core.constans.IDFormatEnum;
 import com.yss.id.client.core.model.SegmentId;
 import com.yss.id.client.core.model.SnowflakeId;
 
@@ -41,5 +42,5 @@ public interface IdService {
      *
      * @return
      */
-    SnowflakeId getSnowflakeId();
+    SnowflakeId getSnowflakeId(IDFormatEnum format);
 }

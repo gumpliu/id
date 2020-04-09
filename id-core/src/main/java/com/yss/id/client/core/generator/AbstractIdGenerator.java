@@ -1,10 +1,14 @@
 package com.yss.id.client.core.generator;
 
+import com.yss.id.client.core.constans.Constants;
 import com.yss.id.client.core.model.BaseBuffer;
 import com.yss.id.client.core.service.IdService;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @Description: id 生成器基础实现，统一实现双缓存
@@ -15,6 +19,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class AbstractIdGenerator<T> {
 
     protected Map<String, BaseBuffer<T>> baseMap = new ConcurrentHashMap<String, BaseBuffer<T>>();
+
+    private static ExecutorService executor = Executors.newFixedThreadPool(Constants.THREAD_CORE);
 
     protected IdService idService;
 
@@ -97,26 +103,31 @@ public abstract class AbstractIdGenerator<T> {
      */
     protected void loadNextBuffer(String bizTag){
 
-        BaseBuffer baseBuffer  = baseMap.get(bizTag);
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                BaseBuffer baseBuffer  = baseMap.get(bizTag);
 
-        T currentBuffer = (T) baseBuffer.getCurrent();
+                T currentBuffer = (T) baseBuffer.getCurrent();
 
-        T nextBuffer = (T) baseBuffer.getBuffers()[baseBuffer.nextPos()];
+                T nextBuffer = (T) baseBuffer.getBuffers()[baseBuffer.nextPos()];
 
-        //是否需要获取下一缓存，维护nextReady状态
+                //是否需要获取下一缓存，维护nextReady状态
 
-        if(!baseBuffer.isAlreadyLoadBuffer() && baseBuffer.isloadNextBuffer(currentBuffer, nextBuffer)){
+                if(!baseBuffer.isAlreadyLoadBuffer() && baseBuffer.isloadNextBuffer(currentBuffer, nextBuffer)){
 
-            synchronized (baseBuffer){
-                if(!baseBuffer.isAlreadyLoadBuffer()){
-                    //远程调用服务获取id集合，并添加至缓存中
-                    romoteLoadNextBuffer(bizTag);
+                    synchronized (baseBuffer){
+                        if(!baseBuffer.isAlreadyLoadBuffer()){
+                            //远程调用服务获取id集合，并添加至缓存中
+                            romoteLoadNextBuffer(bizTag);
 
-                    baseBuffer.setAlreadyLoadBuffer(true);
+                            baseBuffer.setAlreadyLoadBuffer(true);
+                        }
+                    }
                 }
-
             }
-        }
+        });
+
     }
 
     /**

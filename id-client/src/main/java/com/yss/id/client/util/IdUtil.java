@@ -1,5 +1,6 @@
 package com.yss.id.client.util;
 
+import com.yss.id.client.core.constans.IDFormatEnum;
 import com.yss.id.client.core.generator.IdGenerator;
 import com.yss.id.client.factory.IdGeneratorFactory;
 
@@ -67,21 +68,12 @@ public class IdUtil {
     }
 
     /**
-     * 雪花模式返回值固定为20位
-     *
-     * @return
-     */
-    public static String getSnowflakeNextId(){
-        return idGenerator.getSnowflakeNextId();
-    }
-
-    /**
-     * 获取snowflake模式id,返回id值。可以设置时间返回格式，最低为秒。使用枚举限制。
+     * 获取snowflake模式id,返回id值，确定返回长度请查看{@link IDFormatEnum}
      *
      * @param format
      * @return
      */
-    public static String getSnowflakeNextId(Enum format){
+    public static String getSnowflakeNextId(IDFormatEnum format){
         return idGenerator.getSnowflakeNextId(format);
     }
 }

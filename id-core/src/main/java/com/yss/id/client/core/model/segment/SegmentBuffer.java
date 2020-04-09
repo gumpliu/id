@@ -1,6 +1,7 @@
 package com.yss.id.client.core.model.segment;
 
-import com.yss.id.client.core.Constants;
+import com.alibaba.fastjson.JSON;
+import com.yss.id.client.core.constans.Constants;
 import com.yss.id.client.core.model.BaseBuffer;
 import com.yss.id.client.core.util.MathUtil;
 
@@ -45,10 +46,11 @@ public class SegmentBuffer extends BaseBuffer<Segment> {
 
         long initValue = currentBuffer.getMax() - currentBuffer.getStep();
 
+        System.out.println(JSON.toJSONString(currentBuffer.getBuffer()));
+
         BigDecimal currentThreshold = BigDecimal.valueOf(currentBuffer.getValue().get())
                 .subtract(BigDecimal.valueOf(initValue))
-                .divide(BigDecimal.valueOf(currentBuffer.getStep()))
-                .setScale(2, BigDecimal.ROUND_HALF_UP)
+                .divide(BigDecimal.valueOf(currentBuffer.getStep()), 2, BigDecimal.ROUND_HALF_UP)
                 .multiply(BigDecimal.valueOf(100));
 
         return currentThreshold.intValue() > Constants.ID_THRESHOLDVALUE;

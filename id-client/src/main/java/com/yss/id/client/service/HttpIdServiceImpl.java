@@ -2,7 +2,8 @@ package com.yss.id.client.service;
 
 import com.alibaba.fastjson.JSON;
 import com.yss.id.client.config.IdClientConfig;
-import com.yss.id.client.core.Constants;
+import com.yss.id.client.core.constans.Constants;
+import com.yss.id.client.core.constans.IDFormatEnum;
 import com.yss.id.client.core.model.SegmentId;
 import com.yss.id.client.core.model.SnowflakeId;
 import com.yss.id.client.core.service.IdService;
@@ -52,9 +53,9 @@ public class HttpIdServiceImpl implements IdService {
     }
 
     @Override
-    public SnowflakeId getSnowflakeId() {
+    public SnowflakeId getSnowflakeId(IDFormatEnum format) {
 
-        String url = MessageFormat.format(Constants.SWONFLAKE_URL, chooseService());
+        String url = MessageFormat.format(Constants.SWONFLAKE_URL, chooseService(), format.name());
 
 
         return remoteLoadSnowflake(url);

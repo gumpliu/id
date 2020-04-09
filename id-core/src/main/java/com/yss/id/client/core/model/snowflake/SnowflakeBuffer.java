@@ -1,15 +1,10 @@
 package com.yss.id.client.core.model.snowflake;
 
-import com.yss.id.client.core.Constants;
+import com.yss.id.client.core.constans.Constants;
+import com.yss.id.client.core.constans.IDFormatEnum;
 import com.yss.id.client.core.model.BaseBuffer;
-import com.yss.id.client.core.model.segment.Segment;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @Description: 雪花模式返回结构
@@ -18,6 +13,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @Version V1.0
  **/
 public class SnowflakeBuffer extends BaseBuffer<Snowflake> {
+
+    private IDFormatEnum format;
 
     public SnowflakeBuffer(){
         buffers =  new Snowflake[]{new Snowflake(this), null};
@@ -43,11 +40,17 @@ public class SnowflakeBuffer extends BaseBuffer<Snowflake> {
 
         BigDecimal currentThreshold = BigDecimal.valueOf(currentBuffer.getStep())
                 .subtract(BigDecimal.valueOf(currentBuffer.getQueue().size()))
-                .divide(BigDecimal.valueOf(currentBuffer.getStep()))
-                .setScale(2, BigDecimal.ROUND_HALF_UP)
+                .divide(BigDecimal.valueOf(currentBuffer.getStep()), 2, BigDecimal.ROUND_HALF_UP)
                 .multiply(BigDecimal.valueOf(100));
 
         return currentThreshold.intValue() > Constants.ID_THRESHOLDVALUE;
     }
 
+    public IDFormatEnum getFormat() {
+        return format;
+    }
+
+    public void setFormat(IDFormatEnum format) {
+        this.format = format;
+    }
 }

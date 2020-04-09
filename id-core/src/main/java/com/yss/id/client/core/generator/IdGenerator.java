@@ -1,5 +1,7 @@
 package com.yss.id.client.core.generator;
 
+import com.yss.id.client.core.constans.IDFormatEnum;
+
 /**
  * id 生成器
  *
@@ -52,17 +54,10 @@ public interface IdGenerator {
     String getSegmentFixedLengthNextId(String prefix, String bizTag, int length);
 
     /**
-     * 雪花模式返回值固定为20位
-     *
+     * 获取snowflake模式id,返回id值，确定返回长度请查看{@link IDFormatEnum}
+     **
+     * @param format 返回格式
      * @return
      */
-    String getSnowflakeNextId();
-
-    /**
-     * 获取snowflake模式id,返回id值。可以设置时间返回格式，最低为秒。使用枚举限制。
-     *
-     * @param format
-     * @return
-     */
-    String getSnowflakeNextId(Enum format);
+    String getSnowflakeNextId(IDFormatEnum format);
 }

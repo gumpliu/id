@@ -1,8 +1,6 @@
 package com.yss.id.client.core.util;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import com.yss.id.client.core.constans.IDFormatEnum;
 
 /**
  * 生成分布式系统唯一的主键id
@@ -48,10 +46,10 @@ public class SnowflakeIdWorker {
      * 时间戳存放的位置应该是从22位开始的，左移22位
      */
     private final long timestampLeftShift = dataShiftBits + dataIdBits;
-    /**
-     * 4095 生成序列的最大值
-     */
-    private final long maxSequence = -1 ^ (-1 << sequenceBits);
+//    /**
+//     * 4095 生成序列的最大值
+//     */
+//    private final long maxSequence = -1 ^ (-1 << sequenceBits);
     /**
      * 机器码id 小于31
      */
@@ -92,7 +90,7 @@ public class SnowflakeIdWorker {
      *
      * @return 8个字节的长整型
      */
-    public synchronized long genNextId() {
+    public synchronized String genNextId(IDFormatEnum format) {
         long timeStamp = genTimeStamp();
         /**表示系统的时间修改了*/
         if (timeStamp < this.lastTimeStamp) {
@@ -100,7 +98,7 @@ public class SnowflakeIdWorker {
         }
         if (timeStamp == this.lastTimeStamp) {
             /**查看序列是否溢出*/
-            this.sequence = (this.sequence + 1) & maxSequence;
+            this.sequence = (this.sequence + 1) & format.getMaxSequence();
             if (this.sequence == 0) {
                 /**当出现溢出的时候，阻塞到下一个毫秒*/
                 timeStamp = this.toNextMillis(this.lastTimeStamp);
@@ -109,11 +107,24 @@ public class SnowflakeIdWorker {
             this.sequence = 0L;
         }
         this.lastTimeStamp = timeStamp;
-        //通过移位或运算拼接组成64ID号
-        return ((timeStamp - startTime) << timestampLeftShift)
-                | (dataId << dataShiftBits)
-                | (worderId << sequenceBits)
-                | sequence;
+
+        return getId(format);
+    }
+
+
+    private String getId(IDFormatEnum format){
+
+        if(IDFormatEnum.ID_FORMAT_NORMAL == format){
+            return String.valueOf (((lastTimeStamp - startTime) << timestampLeftShift)
+                    | (dataId << dataShiftBits)
+                    | (worderId << sequenceBits)
+                    | sequence);
+        }
+
+        String date = DateUtil.dateToString(lastTimeStamp, format.getFormat());
+
+        return date + worderId +  MathUtil.appendZero(String.valueOf(sequence), format.getLength());
+
     }
 
     /**
@@ -144,19 +155,21 @@ public class SnowflakeIdWorker {
     public static void main(String[] args) {
         SnowflakeIdWorker worker = new SnowflakeIdWorker();
         /**第一次使用的时候希望初始化*/
-        worker.init(30, 14);
-        for (int i = 0; i < 1000; i++) {
-            long workerId = worker.genNextId();
-            System.out.println(workerId);
+        worker.init(30, 30);
+        for (int i = 0; i < 1; i++) {
+            String workerId = worker.genNextId(IDFormatEnum.ID_FORMAT_NORMAL);
+            String workerId1 = worker.genNextId(IDFormatEnum.ID_FORMAT_SECOND);
+            String workerId2 = worker.genNextId(IDFormatEnum.ID_FORMAT_SHOT_YEAR_SECOND);
+            String workerId3 = worker.genNextId(IDFormatEnum.ID_FORMAT_MILLISECOND);
+            String workerId4 = worker.genNextId(IDFormatEnum.ID_FORMAT_SHOT_YEAR_MILLISECOND);
+
+            System.out.println("snowflake，正常=" + workerId);
+            System.out.println(IDFormatEnum.ID_FORMAT_SECOND.getFormat() + "=" + workerId1);
+            System.out.println(IDFormatEnum.ID_FORMAT_SHOT_YEAR_SECOND.getFormat() + "=" +workerId2);
+            System.out.println(IDFormatEnum.ID_FORMAT_MILLISECOND.getFormat() + "=" +workerId3);
+            System.out.println(IDFormatEnum.ID_FORMAT_SHOT_YEAR_MILLISECOND.getFormat() + "=" +workerId4);
+
         }
-        String time="2015-01-01 00:00:00";
-        Date date=null;
-        SimpleDateFormat formatter=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        try {
-            date= formatter.parse(time);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        System.out.println(date.getTime());
+
     }
 }

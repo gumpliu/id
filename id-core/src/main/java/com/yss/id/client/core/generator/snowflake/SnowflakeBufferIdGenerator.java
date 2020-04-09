@@ -1,21 +1,15 @@
 package com.yss.id.client.core.generator.snowflake;
 
-import com.yss.id.client.core.Constants;
+import com.yss.id.client.core.constans.Constants;
+import com.yss.id.client.core.constans.IDFormatEnum;
 import com.yss.id.client.core.generator.AbstractIdGenerator;
 import com.yss.id.client.core.model.BaseBuffer;
-import com.yss.id.client.core.model.SegmentId;
 import com.yss.id.client.core.model.SnowflakeId;
-import com.yss.id.client.core.model.segment.Segment;
-import com.yss.id.client.core.model.segment.SegmentBuffer;
 import com.yss.id.client.core.model.snowflake.Snowflake;
 import com.yss.id.client.core.model.snowflake.SnowflakeBuffer;
 import com.yss.id.client.core.service.IdService;
 
-import java.math.BigInteger;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @Description: 雪花模式实现，直接从id-server获取id
@@ -29,8 +23,8 @@ public class SnowflakeBufferIdGenerator extends AbstractIdGenerator<Snowflake>{
         super(idService);
     }
 
-    public String nextId(){
-        return nextId(Constants.SNOWFLAKE_KEY);
+    public String nextId(IDFormatEnum format){
+        return nextId(format.name());
     }
 
     @Override
@@ -38,6 +32,7 @@ public class SnowflakeBufferIdGenerator extends AbstractIdGenerator<Snowflake>{
         //远程调用服务获取
         SnowflakeBuffer snowflakeBuffer = new SnowflakeBuffer();
         snowflakeBuffer.setKey(bizTag);
+        snowflakeBuffer.setFormat(IDFormatEnum.valueOf(bizTag));
 
         Snowflake snowflake = getSnowflake(snowflakeBuffer);
 
@@ -64,7 +59,7 @@ public class SnowflakeBufferIdGenerator extends AbstractIdGenerator<Snowflake>{
      * @return
      */
     private Snowflake getSnowflake(SnowflakeBuffer snowflakeBuffer){
-        SnowflakeId snowflakeId = idService.getSnowflakeId();
+        SnowflakeId snowflakeId = idService.getSnowflakeId(snowflakeBuffer.getFormat());
 
         Snowflake snowflake = new Snowflake(snowflakeBuffer);
         snowflake.setStep(snowflakeId.getStep());

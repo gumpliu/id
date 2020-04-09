@@ -1,5 +1,6 @@
 package com.yss.id.client.core.generator.snowflake.impl;
 
+import com.yss.id.client.core.constans.IDFormatEnum;
 import com.yss.id.client.core.generator.snowflake.SnowflakeBufferIdGenerator;
 import com.yss.id.client.core.generator.snowflake.IdSnowflakeGenerator;
 import com.yss.id.client.core.service.IdService;
@@ -16,13 +17,9 @@ public class IdSnowflakeGeneratorImpl extends SnowflakeBufferIdGenerator impleme
         super(idService);
     }
 
-    @Override
-    public String getSnowflakeNextId() {
-        return nextId();
-    }
 
     @Override
-    public String getSnowflakeNextId(Enum format) {
-        return "";
+    public String getSnowflakeNextId(IDFormatEnum format) {
+        return nextId(format);
     }
 }

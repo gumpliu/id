@@ -1,5 +1,6 @@
 package com.yss.id.client.core.generator;
 
+import com.yss.id.client.core.constans.IDFormatEnum;
 import com.yss.id.client.core.generator.segment.IdSegmentGenerator;
 import com.yss.id.client.core.generator.snowflake.IdSnowflakeGenerator;
 
@@ -48,12 +49,7 @@ public class IdGeneratorImpl implements IdGenerator {
     }
 
     @Override
-    public String getSnowflakeNextId() {
-        return snowflakeGenerator.getSnowflakeNextId();
-    }
-
-    @Override
-    public String getSnowflakeNextId(Enum format) {
+    public String getSnowflakeNextId(IDFormatEnum format) {
         return snowflakeGenerator.getSnowflakeNextId(format);
     }
 }
