@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
- *  todo 压力测试，因为使用了数据库锁，2、验证数据锁是否生效 3、锁优化
- *
  * @Description: id 获取
  * @Author gumpLiu
  * @Date 2020-03-24

@@ -46,5 +46,5 @@ id:
   segement:
     step: 10
   snowflake:
-    step: 40
+    step: 1000
     workerId: 23
