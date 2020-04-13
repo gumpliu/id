@@ -1,12 +1,10 @@
 package com.yss.id.client.factory;
 
-import com.yss.id.client.core.generator.IdGenerator;
-import com.yss.id.client.core.generator.IdGeneratorImpl;
-import com.yss.id.client.core.generator.segment.IdSegmentGenerator;
-import com.yss.id.client.core.generator.snowflake.IdSnowflakeGenerator;
+import com.yss.id.core.generator.IdGenerator;
+import com.yss.id.core.generator.IdGeneratorImpl;
+import com.yss.id.core.generator.segment.IdSegmentGenerator;
+import com.yss.id.core.generator.snowflake.IdSnowflakeGenerator;
 import com.yss.id.client.util.BeanUtil;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

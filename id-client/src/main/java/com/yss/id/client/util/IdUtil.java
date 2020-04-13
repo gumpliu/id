@@ -1,7 +1,7 @@
 package com.yss.id.client.util;
 
-import com.yss.id.client.core.constans.IDFormatEnum;
-import com.yss.id.client.core.generator.IdGenerator;
+import com.yss.id.core.constans.IDFormatEnum;
+import com.yss.id.core.generator.IdGenerator;
 import com.yss.id.client.factory.IdGeneratorFactory;
 
 /**

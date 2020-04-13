@@ -1,11 +1,11 @@
 package com.yss.id.client;
 
 import com.yss.id.client.config.IdClientConfig;
-import com.yss.id.client.core.generator.segment.IdSegmentGenerator;
-import com.yss.id.client.core.generator.segment.impl.IdSegmentGeneratorImpl;
-import com.yss.id.client.core.generator.snowflake.IdSnowflakeGenerator;
-import com.yss.id.client.core.generator.snowflake.impl.IdSnowflakeGeneratorImpl;
-import com.yss.id.client.core.service.IdService;
+import com.yss.id.core.generator.segment.IdSegmentGenerator;
+import com.yss.id.core.generator.segment.impl.IdSegmentGeneratorImpl;
+import com.yss.id.core.generator.snowflake.IdSnowflakeGenerator;
+import com.yss.id.core.generator.snowflake.impl.IdSnowflakeGeneratorImpl;
+import com.yss.id.core.service.IdService;
 import com.yss.id.client.service.HttpIdServiceImpl;
 import com.yss.id.client.util.BeanUtil;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;

@@ -2,12 +2,12 @@ package com.yss.id.client.service;
 
 import com.alibaba.fastjson.JSON;
 import com.yss.id.client.config.IdClientConfig;
-import com.yss.id.client.core.constans.Constants;
-import com.yss.id.client.core.constans.IDFormatEnum;
-import com.yss.id.client.core.model.SegmentId;
-import com.yss.id.client.core.model.SnowflakeId;
-import com.yss.id.client.core.service.IdService;
-import com.yss.id.client.core.util.HttpUtils;
+import com.yss.id.core.constans.Constants;
+import com.yss.id.core.constans.IDFormatEnum;
+import com.yss.id.core.model.SegmentId;
+import com.yss.id.core.model.SnowflakeId;
+import com.yss.id.core.service.IdService;
+import com.yss.id.core.util.HttpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 

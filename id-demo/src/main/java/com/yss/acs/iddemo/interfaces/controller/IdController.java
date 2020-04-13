@@ -4,7 +4,7 @@ import com.yss.acs.iddemo.domain.IdTestRepository;
 import com.yss.acs.iddemo.domain.TIdTest;
 import com.yss.fsip.generic.Result;
 import com.yss.fsip.generic.ResultFactory;
-import com.yss.id.client.core.constans.IDFormatEnum;
+import com.yss.id.core.constans.IDFormatEnum;
 import com.yss.id.client.util.IdUtil;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
