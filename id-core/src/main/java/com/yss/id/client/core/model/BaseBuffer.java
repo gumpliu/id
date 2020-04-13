@@ -1,5 +1,7 @@
 package com.yss.id.client.core.model;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * 双buffer
  */
@@ -11,9 +13,11 @@ public abstract class BaseBuffer<T> {
     private volatile int minStep;
     private volatile boolean nextReady; //下一个segment是否处于可切换状态
     private volatile boolean alreadyLoadBuffer; //是否已经换成另一缓存
+    private final AtomicBoolean threadRunning;
 
 
     public BaseBuffer() {
+        threadRunning = new AtomicBoolean(false);
         currentPos = 0;
     }
 
@@ -105,5 +109,9 @@ public abstract class BaseBuffer<T> {
 
     public void setAlreadyLoadBuffer(boolean alreadyLoadBuffer) {
         this.alreadyLoadBuffer = alreadyLoadBuffer;
+    }
+
+    public AtomicBoolean getThreadRunning() {
+        return threadRunning;
     }
 }

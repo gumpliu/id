@@ -33,7 +33,7 @@ spring:
     show-sql: true
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
   #时间戳统一转换
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
@@ -44,7 +44,7 @@ logging:
   config: classpath:logback-spring.xml
 id:
   segement:
-    step: 10
+    step: 5
   snowflake:
     step: 1000
     workerId: 23

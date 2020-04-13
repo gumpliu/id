@@ -98,35 +98,30 @@ public abstract class AbstractIdGenerator<T> {
 
     /**
      * 加载下一个缓存，超过设置阈值 获取下一个缓存
+     * todo 开启线程运行
      *
      * @param bizTag
      */
     protected void loadNextBuffer(String bizTag){
+        BaseBuffer baseBuffer  = baseMap.get(bizTag);
 
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                BaseBuffer baseBuffer  = baseMap.get(bizTag);
+        T currentBuffer = (T) baseBuffer.getCurrent();
 
-                T currentBuffer = (T) baseBuffer.getCurrent();
+        T nextBuffer = (T) baseBuffer.getBuffers()[baseBuffer.nextPos()];
 
-                T nextBuffer = (T) baseBuffer.getBuffers()[baseBuffer.nextPos()];
+        //是否需要获取下一缓存，维护nextReady状态
 
-                //是否需要获取下一缓存，维护nextReady状态
+        if(!baseBuffer.isAlreadyLoadBuffer() && baseBuffer.isloadNextBuffer(currentBuffer, nextBuffer)){
 
-                if(!baseBuffer.isAlreadyLoadBuffer() && baseBuffer.isloadNextBuffer(currentBuffer, nextBuffer)){
+            synchronized (baseBuffer){
+                if(!baseBuffer.isAlreadyLoadBuffer()){
+                    //远程调用服务获取id集合，并添加至缓存中
+                    romoteLoadNextBuffer(bizTag);
 
-                    synchronized (baseBuffer){
-                        if(!baseBuffer.isAlreadyLoadBuffer()){
-                            //远程调用服务获取id集合，并添加至缓存中
-                            romoteLoadNextBuffer(bizTag);
-
-                            baseBuffer.setAlreadyLoadBuffer(true);
-                        }
-                    }
+                    baseBuffer.setAlreadyLoadBuffer(true);
                 }
             }
-        });
+        }
 
     }
 

@@ -7,8 +7,9 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 /**
+ * todo 异常处理
+ * todo 添加日志
  * todo id-server 启动校验
- * todo biz_tag 管理，1-直接创建 2、上线时提供DB脚本。暂时为没有直接创建！
  *
  */
 @SpringBootApplication
