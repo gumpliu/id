@@ -4,9 +4,14 @@ import com.alibaba.fastjson.JSON;
 import com.yss.id.core.constans.Constants;
 import com.yss.id.core.model.BaseBuffer;
 import com.yss.id.core.service.IdService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Description: id 生成器基础实现，统一实现双缓存
@@ -22,6 +27,8 @@ public abstract class AbstractIdGenerator<T> {
 
     protected IdService idService;
 
+    private static final Logger logger = LoggerFactory.getLogger(AbstractIdGenerator.class);
+
     public AbstractIdGenerator(IdService idService){
         this.idService = idService;
     }
@@ -32,6 +39,7 @@ public abstract class AbstractIdGenerator<T> {
      * @return
      */
     public String nextId(String bizTag){
+        logger.info(" Get id start, param bizTag = {}.", bizTag);
 
         BaseBuffer<T> baseBuffer = getBuffer(bizTag);
 
@@ -45,14 +53,18 @@ public abstract class AbstractIdGenerator<T> {
                 waitAndSleep(baseBuffer);
             }
 
-            nextId = baseBuffer.nextId(baseBuffer.getCurrent());
+            nextId = baseBuffer.nextId();
 
             //nextId 等于maxId时，切换缓存
-            if(baseBuffer.switchBufer(baseBuffer.getCurrent())){
+            if(baseBuffer.switchBufer()){
+
+                logger.info(" Swith buffer ...., bizTag = {}.", bizTag);
+
                 baseBuffer.switchPos();
                 baseBuffer.setAlreadyLoadBuffer(false);
             }
         }
+        logger.info(" Get id end, return nextId is {}.", nextId);
 
         return nextId;
     }
@@ -70,7 +82,14 @@ public abstract class AbstractIdGenerator<T> {
         BaseBuffer baseBuffer = baseMap.get(bizTag);
 
         if(baseBuffer == null){
+            logger.info(" Init BaseBuffer start, param bizTag = {}.", bizTag);
+
             baseBuffer = initBaseBuffer(bizTag);
+
+            if(logger.isDebugEnabled()){
+                logger.info(" Init BaseBuffer end, baseBuffer = {}.", JSON.toJSONString(baseBuffer));
+            }
+
         }
 
         return baseBuffer;
@@ -86,9 +105,7 @@ public abstract class AbstractIdGenerator<T> {
         BaseBuffer baseBuffer = baseMap.get(bizTag);
 
         if(baseMap.get(bizTag) == null){
-            //todo 锁优化，可以移动至createBaseBffer中
             synchronized (baseMap){
-
                 if(baseMap.get(bizTag) != null){
                     return baseMap.get(bizTag);
                 }
@@ -119,15 +136,27 @@ public abstract class AbstractIdGenerator<T> {
                 && baseBuffer.isloadNextBuffer(currentBuffer, nextBuffer)
                 && baseBuffer.getThreadRunning().compareAndSet(false, true)){
 
+            logger.info("load next buffer start... , bizTag={}.", bizTag);
+
             executor.execute(()->{
                 if(!baseBuffer.isAlreadyLoadBuffer()){
                     //远程调用服务获取id集合，并添加至缓存中
                     try {
                         romoteLoadNextBuffer(bizTag);
                         baseBuffer.setAlreadyLoadBuffer(true);
+
+                        if(logger.isDebugEnabled()){
+                            logger.debug("load next buffer end ... ,bizTag={}, baseBuffer={}.", bizTag, JSON.toJSONString(baseBuffer));
+                        }else{
+                            logger.info("load next buffer end ... , bizTag={}.", bizTag);
+                        }
+
                     }finally {
                         baseBuffer.getThreadRunning().set(false);
                     }
+
+                }else{
+                    logger.info("already load next buffer, bizTag={}.", bizTag);
                 }
             });
 

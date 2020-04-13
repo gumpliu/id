@@ -7,6 +7,8 @@ import com.yss.id.core.model.segment.Segment;
 import com.yss.id.core.model.segment.SegmentBuffer;
 import com.yss.id.core.service.IdService;
 import com.yss.id.core.util.MathUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,6 +21,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * @Version V1.0
  **/
 public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
+
+    private static final Logger logger = LoggerFactory.getLogger(SegmentBufferIdGenerator.class);
 
     private Map<String, Integer> bizTagLenMap = new ConcurrentHashMap<String, Integer>();
 
@@ -44,6 +48,7 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
      * @return
      */
     public String fixedLengthNextId(String bizTag, int length){
+        logger.info("Get fixed length id, bizTag={}, length={}", bizTag, length);
         //todo 隐式为bizTag -> length
         putBizTagLen(bizTag, length);
 
@@ -74,7 +79,7 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
             //获取下一缓存
             loadNextBuffer(bizTag);
             //nextId 等于maxId时，切换缓存
-            if(segmentBuffer.switchBufer(segment)){
+            if(segmentBuffer.switchBufer()){
                 segmentBuffer.switchPos();
                 segmentBuffer.setAlreadyLoadBuffer(false);
             }
@@ -86,6 +91,8 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
 
     @Override
     public BaseBuffer createBaseBuffer(String bizTag) {
+        logger.info("segment create SegmentBuffer, bizTag={}", bizTag);
+
         //远程调用服务获取segment
         SegmentBuffer segmentBuffer = new SegmentBuffer();
         segmentBuffer.setKey(bizTag);
@@ -100,6 +107,8 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
 
     @Override
     protected void romoteLoadNextBuffer(String bizTag) {
+        logger.info("segment romote load next buffer, bizTag={}", bizTag);
+
         //远程调用服务获取segment
         SegmentBuffer segmentBuffer = (SegmentBuffer) baseMap.get(bizTag);
 

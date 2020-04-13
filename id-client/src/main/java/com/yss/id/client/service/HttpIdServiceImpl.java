@@ -8,13 +8,14 @@ import com.yss.id.core.model.SegmentId;
 import com.yss.id.core.model.SnowflakeId;
 import com.yss.id.core.service.IdService;
 import com.yss.id.core.util.HttpUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Logger;
 
 /**
  *
@@ -25,7 +26,7 @@ import java.util.logging.Logger;
  **/
 public class HttpIdServiceImpl implements IdService {
 
-    private static final Logger logger = Logger.getLogger(HttpIdServiceImpl.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(HttpIdServiceImpl.class);
 
     @Autowired
     private IdClientConfig clientConfig;
@@ -34,14 +35,14 @@ public class HttpIdServiceImpl implements IdService {
     public SegmentId getSegmentId(String bizTag) {
         String url = MessageFormat.format(Constants.SEGEMNT_URL, chooseService(), bizTag);
 
-        return remoteLoadSegment(url);
+        return romoteLoadSegment(url);
     }
 
     @Override
     public SegmentId getSegmentId(String bizTag, int length) {
         String url = MessageFormat.format(Constants.SEGEMNT_FIEXD_URL, chooseService(), bizTag, length);
 
-        return remoteLoadSegment(url);
+        return romoteLoadSegment(url);
     }
 
     @Override
@@ -49,7 +50,7 @@ public class HttpIdServiceImpl implements IdService {
 
         String url = MessageFormat.format(Constants.SEGEMNT_INIT_URL, chooseService(), bizTag);
 
-        return remoteLoadSegment(url);
+        return romoteLoadSegment(url);
     }
 
     @Override
@@ -58,7 +59,7 @@ public class HttpIdServiceImpl implements IdService {
         String url = MessageFormat.format(Constants.SWONFLAKE_URL, chooseService(), format.name());
 
 
-        return remoteLoadSnowflake(url);
+        return romoteLoadSnowflake(url);
     }
 
     /**
@@ -67,10 +68,12 @@ public class HttpIdServiceImpl implements IdService {
      * @param url
      * @return
      */
-    private SegmentId remoteLoadSegment(String url){
+    private SegmentId romoteLoadSegment(String url){
+
+        logger.info("romote load segment start, url={}", url);
         //todo 添加重试机制
         String response = HttpUtils.post(url,5000, 5000);
-        logger.info("id client remoteLoadSegment end, response:" + response);
+        logger.info("romote load segment end, response={}", response);
         if (response == null || "".equals(response.trim())) {
             return null;
         }
@@ -85,9 +88,10 @@ public class HttpIdServiceImpl implements IdService {
      * @param url
      * @return
      */
-    private SnowflakeId remoteLoadSnowflake(String url){
+    private SnowflakeId romoteLoadSnowflake(String url){
+        logger.info("romote load snowflake start, url={}", url);
         String response = HttpUtils.post(url,5000, 5000);
-        logger.info("id client remoteLoadSnowflake end, response:" + response);
+        logger.info(" romote load snowflake end, response={}",  response);
         if (response == null || "".equals(response.trim())) {
             return null;
         }

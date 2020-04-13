@@ -21,13 +21,13 @@ public class SnowflakeBuffer extends BaseBuffer<Snowflake> {
     }
 
     @Override
-    public String nextId(Snowflake currentBuffer) {
-        return currentBuffer.getQueue().remove();
+    public String nextId() {
+        return getCurrent().getQueue().remove();
     }
 
     @Override
-    public boolean switchBufer(Snowflake currentBuffer) {
-        return currentBuffer.getQueue().isEmpty();
+    public boolean switchBufer() {
+        return getCurrent().getQueue().isEmpty();
     }
 
     @Override

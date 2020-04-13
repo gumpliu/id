@@ -36,6 +36,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
+        <slf4j-api>1.7.26</slf4j-api>
         <!--        http://219.141.235.67:18081/nexus-->
         <repository.url>http://219.141.235.67:18081/nexus/content/groups/public/</repository.url>
         <releases.url>http://219.141.235.67:18081/nexus/content/repositories/releases/</releases.url>
@@ -142,13 +143,6 @@
             </dependency>
 
             <dependency>
-                <groupId>com.yss.fsip</groupId>
-                <artifactId>fsipweb-spring-boot-starter</artifactId>
-                <version>${com.yss.fsipweb.starter.version}</version>
-            </dependency>
-
-
-            <dependency>
                 <groupId>javax.servlet</groupId>
                 <artifactId>javax.servlet-api</artifactId>
                 <version>${javax.servlet.api.version}</version>
@@ -201,13 +195,6 @@
                 <version>${io.springfox.swagger.version}</version>
             </dependency>
 
-            <!-- 拼音工具包 -->
-            <dependency>
-                <groupId>com.belerweb</groupId>
-                <artifactId>pinyin4j</artifactId>
-                <version>${com.belerweb.pinyin4j.version}</version>
-            </dependency>
-
             <!-- powermock -->
             <!-- https://mvnrepository.com/artifact/org.powermock/powermock-api-mockito -->
             <dependency>
@@ -238,6 +225,13 @@
                 <version>${mockito.version}</version>
                 <scope>test</scope>
             </dependency>
+            <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j-api}</version>
+            </dependency>
+
 
         </dependencies>
     </dependencyManagement>

@@ -24,18 +24,16 @@ public abstract class BaseBuffer<T> {
 
     /**
      * 根据当前缓存获取id
-     * @param currentBuffer
      * @return
      */
-    public abstract String nextId(T currentBuffer);
+    public abstract String nextId();
 
     /**
      * 是否切换至下一缓存，当id消耗完后切换
      *
-     * @param currentBuffer
      * @return
      */
-    public  abstract boolean switchBufer(T currentBuffer);
+    public  abstract boolean switchBufer();
 
     /**
      * 是否需要获取二级缓存

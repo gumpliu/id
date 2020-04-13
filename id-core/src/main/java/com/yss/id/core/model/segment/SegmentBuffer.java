@@ -20,15 +20,16 @@ public class SegmentBuffer extends BaseBuffer<Segment> {
 
 
     @Override
-    public String nextId(Segment currentBuffer) {
+    public String nextId() {
 
-        return String.valueOf(currentBuffer.getValue().incrementAndGet());
+        return String.valueOf(getCurrent().getValue().incrementAndGet());
     }
 
     @Override
-    public boolean switchBufer(Segment currentBuffer) {
+    public boolean switchBufer() {
         //todo BigInteger  BigDecimal 超长计算
         boolean isFiexdSwitch = true;
+        Segment currentBuffer = getCurrent();
         if(maxLength > 0){
             isFiexdSwitch = BigDecimal.valueOf(currentBuffer.getValue().get()).
                     compareTo(BigDecimal.valueOf(MathUtil.maxValue(currentBuffer.getBuffer().getKey(), maxLength))) >= 0;
