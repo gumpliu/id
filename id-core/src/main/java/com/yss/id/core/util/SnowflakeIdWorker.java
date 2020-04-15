@@ -67,6 +67,12 @@ public class SnowflakeIdWorker {
      */
     private long lastTimeStamp = -1L;
 
+    private IDFormatEnum format;
+
+    public SnowflakeIdWorker(IDFormatEnum format){
+        this.format = format;
+    }
+
     /**
      * 初始化并配置机器码id和数据id
      *
@@ -90,7 +96,7 @@ public class SnowflakeIdWorker {
      *
      * @return 8个字节的长整型
      */
-    public synchronized String genNextId(IDFormatEnum format) {
+    public synchronized String genNextId() {
         long timeStamp = genTimeStamp();
         /**表示系统的时间修改了*/
         if (timeStamp < this.lastTimeStamp) {
@@ -108,11 +114,11 @@ public class SnowflakeIdWorker {
         }
         this.lastTimeStamp = timeStamp;
 
-        return getId(format);
+        return getId();
     }
 
 
-    private String getId(IDFormatEnum format){
+    private String getId(){
 
         if(IDFormatEnum.ID_FORMAT_NORMAL == format){
             return String.valueOf (((lastTimeStamp - startTime) << timestampLeftShift)
@@ -153,22 +159,10 @@ public class SnowflakeIdWorker {
 
     //--------------------------test--------------------------------------
     public static void main(String[] args) {
-        SnowflakeIdWorker worker = new SnowflakeIdWorker();
+        SnowflakeIdWorker worker = new SnowflakeIdWorker(IDFormatEnum.ID_FORMAT_NORMAL);
         /**第一次使用的时候希望初始化*/
         worker.init(30, 30);
         for (int i = 0; i < 1; i++) {
-            String workerId = worker.genNextId(IDFormatEnum.ID_FORMAT_NORMAL);
-            String workerId1 = worker.genNextId(IDFormatEnum.ID_FORMAT_SECOND);
-            String workerId2 = worker.genNextId(IDFormatEnum.ID_FORMAT_SHOT_YEAR_SECOND);
-            String workerId3 = worker.genNextId(IDFormatEnum.ID_FORMAT_MILLISECOND);
-            String workerId4 = worker.genNextId(IDFormatEnum.ID_FORMAT_SHOT_YEAR_MILLISECOND);
-
-            System.out.println("snowflake，正常=" + workerId);
-            System.out.println(IDFormatEnum.ID_FORMAT_SECOND.getFormat() + "=" + workerId1);
-            System.out.println(IDFormatEnum.ID_FORMAT_SHOT_YEAR_SECOND.getFormat() + "=" +workerId2);
-            System.out.println(IDFormatEnum.ID_FORMAT_MILLISECOND.getFormat() + "=" +workerId3);
-            System.out.println(IDFormatEnum.ID_FORMAT_SHOT_YEAR_MILLISECOND.getFormat() + "=" +workerId4);
-
         }
 
     }

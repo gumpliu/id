@@ -31,7 +31,7 @@ public class SnowflakeSerivceImpl implements SnowflakeIdService {
         List<String> ids = new ArrayList<String>();
 
         for(int i = 0; i < step; i++){
-            ids.add(String.valueOf(SnowflakeIdWorkerFactory.getInstance(format).genNextId(format)));
+            ids.add(String.valueOf(SnowflakeIdWorkerFactory.getInstance(format).genNextId()));
         }
 
         return new SnowflakeId(ids, step);

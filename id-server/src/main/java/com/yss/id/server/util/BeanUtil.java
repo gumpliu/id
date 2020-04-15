@@ -1,4 +1,4 @@
-package com.yss.id.server.config;
+package com.yss.id.server.util;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -27,8 +27,8 @@ public class BeanUtil implements ApplicationContextAware  {
     }
     
     public static <T> T getBean(Class<T> clazz, String beanName) {
-		Map<String, T> beanMap = context.getBeansOfType(clazz);
-		if(beanMap != null && !beanMap.isEmpty()) {
+        Map<String, T> beanMap = context.getBeansOfType(clazz);
+        if(beanMap != null & !beanMap.isEmpty()) {
 			if(beanName != null) {
 		        return beanMap.get(beanName);
 			}
