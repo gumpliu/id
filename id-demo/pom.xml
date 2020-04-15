@@ -76,14 +76,14 @@
 
     <build>
         <plugins>
-            <!--            <plugin>
-                            <groupId>org.springframework.boot</groupId>
-                            <artifactId>spring-boot-maven-plugin</artifactId>
-                            <version>2.1.4.RELEASE</version>
-                            <configuration>
-                                <fork>true</fork>
-                            </configuration>
-                        </plugin>-->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>2.1.4.RELEASE</version>
+                <configuration>
+                    <fork>true</fork>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -99,7 +99,7 @@
                 <version>${spring-cloud.version}</version>
                 <configuration>
                     <fork>true</fork>
-                    <mainClass>com.yss.acs.portal.Application</mainClass>
+                    <mainClass>com.yss.acs.iddemo.Application</mainClass>
                     <layout>ZIP</layout>
 
                 </configuration>
