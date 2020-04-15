@@ -1,6 +1,5 @@
 package com.yss.id.server.domain.segment.service.impl;
 
-import com.yss.id.core.exception.IdException;
 import com.yss.id.core.model.SegmentId;
 import com.yss.id.core.util.MathUtil;
 import com.yss.id.server.config.IdServerProperties;
@@ -39,10 +38,7 @@ public class SegmentIdServiceImpl implements SegmentIdService {
     @Transactional
     public SegmentId getSegment(String bizTag) {
 
-        enable();
-
-        //todo 是否在server端做重试机制
-        for(int i = 0; i < 5; i++){
+       while (true){
             AllocEntity allocEntity = getAllocEntity(bizTag);
 
             int updateNum = allocRepository.updateByBizTag(bizTag, getStep(), allocEntity.getVersion());
@@ -51,18 +47,15 @@ public class SegmentIdServiceImpl implements SegmentIdService {
                 return createSegmentId(allocEntity.getMaxId());
             }
         }
-        throw new IdException("号段获取失败！");
     }
 
     @Override
     @Transactional
     public SegmentId getSegment(String bizTag, int length) {
 
-        enable();
-
         long maxValue  = MathUtil.maxValue(bizTag, length);
 
-        for(int i = 0; i < 5; i++){
+        while (true){
             AllocEntity allocEntity = getAllocEntity(bizTag);
 
             BigInteger maxId = allocEntity.getMaxId();
@@ -81,7 +74,6 @@ public class SegmentIdServiceImpl implements SegmentIdService {
                 return createSegmentId(maxId, length);
             }
         }
-        throw new IdException("号段获取失败！");
 
 
     }
@@ -90,9 +82,7 @@ public class SegmentIdServiceImpl implements SegmentIdService {
     @Transactional
     public SegmentId initSegment(String bizTag) {
 
-        enable();
-
-        for(int i = 0; i < 5; i++){
+        while (true){
             AllocEntity allocEntity = getAllocEntity(bizTag);
 
             int updateNum = allocRepository.initSegmentByBizTag(bizTag, getStep(), allocEntity.getVersion());
@@ -101,7 +91,6 @@ public class SegmentIdServiceImpl implements SegmentIdService {
                 return createSegmentId(BigInteger.ZERO);
             }
         }
-        throw new IdException("号段获取失败！");
     }
 
 
@@ -165,13 +154,6 @@ public class SegmentIdServiceImpl implements SegmentIdService {
         int step = idServerProperties.getSegement().getStep();
 
         return new SegmentId(currentMaxId.add(BigInteger.valueOf(step)).longValue(), step, maxLength);
-    }
-
-    private void enable(){
-        if(!idServerProperties.getSegement().isEnable()){
-            //todo 指定错误码
-            throw new IdException("segment 模式不可用");
-        }
     }
 
     private BigInteger getStep(){

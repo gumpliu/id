@@ -1,9 +1,11 @@
 package com.yss.id.server;
 
 import com.yss.id.server.config.IdServerProperties;
+import com.yss.id.server.filter.ContextFilter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 /**

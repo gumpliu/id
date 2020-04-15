@@ -84,10 +84,6 @@ public class IdController {
 
         IDFormatEnum idFormat = IDFormatEnum.valueOf(format);
 
-        if(idFormat == null){
-            throw new IdException("id format is error! ");
-        }
-
         return snowflakeIdService.getIds(idFormat);
     }
 

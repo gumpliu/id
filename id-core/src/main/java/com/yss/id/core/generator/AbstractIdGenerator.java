@@ -57,9 +57,8 @@ public abstract class AbstractIdGenerator<T> {
 
             //nextId 等于maxId时，切换缓存
             if(baseBuffer.switchBufer()){
-
                 logger.info(" Swith buffer ...., bizTag = {}.", bizTag);
-
+                baseBuffer.getBuffers()[baseBuffer.getCurrentPos()] = null;
                 baseBuffer.switchPos();
                 baseBuffer.setAlreadyLoadBuffer(false);
             }

@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
@@ -24,6 +25,7 @@ import javax.servlet.annotation.WebFilter;
  *
  */
 @Order
+@Component
 @WebFilter(filterName = "contextFilter", urlPatterns = "/*")
 public class ContextFilter implements Filter {
 

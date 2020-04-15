@@ -1,7 +1,6 @@
 package com.yss.id.server.domain.snowflake.impl;
 
 import com.yss.id.core.constans.IDFormatEnum;
-import com.yss.id.core.exception.IdException;
 import com.yss.id.core.model.SnowflakeId;
 import com.yss.id.server.config.IdServerProperties;
 import com.yss.id.server.domain.snowflake.SnowflakeIdService;
@@ -26,8 +25,6 @@ public class SnowflakeSerivceImpl implements SnowflakeIdService {
 
     @Override
     public SnowflakeId getIds(IDFormatEnum format) {
-        //todo 统一处理
-        enable();
 
         int step = idServerProperties.getSnowflake().getStep();
 
@@ -38,12 +35,5 @@ public class SnowflakeSerivceImpl implements SnowflakeIdService {
         }
 
         return new SnowflakeId(ids, step);
-    }
-
-    private void enable(){
-        if(!idServerProperties.getSnowflake().isEnable()){
-            //todo 指定错误码
-            throw new IdException("snowflake 模式不可用");
-        }
     }
 }

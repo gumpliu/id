@@ -42,7 +42,9 @@ public class IdController {
 		for(;;){
 			executorService.execute(()->{
 				TIdTest test = new TIdTest();
-				test.setUid(IdUtil.getSegmentNextId(bizTag));
+				String id = IdUtil.getSegmentNextId(bizTag);
+				test.setTestId(id);
+				test.setId(id);
 				idTestRepository.save(test);
 			});
 
@@ -91,7 +93,9 @@ public class IdController {
 			executorService.execute(
 					()->{
 						TIdTest test = new TIdTest();
-						test.setUid(IdUtil.getSnowflakeNextId(IDFormatEnum.ID_FORMAT_MILLISECOND));
+						String id = IdUtil.getSnowflakeNextId(IDFormatEnum.ID_FORMAT_MILLISECOND);
+						test.setTestId(id);
+						test.setId(id);
 						idTestRepository.save(test);
 					});
 

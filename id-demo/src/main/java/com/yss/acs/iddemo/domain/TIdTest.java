@@ -11,27 +11,25 @@ import javax.persistence.*;
 public class TIdTest{
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    @Column(name = "id",unique = true, nullable = false)
-    private Long id;
+    private String id;
 
     @Basic
-    @Column(name = "uid")
-    private String uid;
+    @Column(name = "test_id")
+    private String testId;
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public String getUid() {
-        return uid;
+    public String getTestId() {
+        return testId;
     }
 
-    public void setUid(String uid) {
-        this.uid = uid;
+    public void setTestId(String testId) {
+        this.testId = testId;
     }
 }

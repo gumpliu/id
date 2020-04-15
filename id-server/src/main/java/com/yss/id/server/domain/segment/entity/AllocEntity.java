@@ -1,5 +1,7 @@
 package com.yss.id.server.domain.segment.entity;
 
+import org.hibernate.annotations.GenericGenerator;
+
 import javax.persistence.*;
 import java.math.BigInteger;
 import java.util.Date;
@@ -9,9 +11,10 @@ import java.util.Date;
 public class AllocEntity {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(name = "id",unique = true, nullable = false)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "custom-id")
+    @GenericGenerator(name="custom-id", strategy = "com.yss.id.server.util.CustomIDGenerator")
+    private String id;
 
     /** 业务类型 */
     @Column(name = "biz_tag",unique = true, nullable = false)
@@ -39,11 +42,11 @@ public class AllocEntity {
     private Date updateTime;
 
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

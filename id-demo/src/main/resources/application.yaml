@@ -9,14 +9,14 @@ spring:
   application:
     name: service-portal
   datasource:
-    #    driver-class-name: oracle.jdbc.OracleDriver
-    #    url: jdbc:oracle:thin:@192.168.102.11:1521/ORCL
-    #    username: fsip_test
-    #    password: fsip_test
-    driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/sofa?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8
-    username: root
-    password: 123456
+    driver-class-name: oracle.jdbc.OracleDriver
+    url: jdbc:oracle:thin:@192.168.96.8:1521/localoracle
+    username: sofa_007
+    password: sofa_007
+#    driver-class-name: com.mysql.jdbc.Driver
+#    url: jdbc:mysql://127.0.0.1:3306/sofa?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8
+#    username: root
+#    password: 123456
     default-auto-commit: true
     auto-commit: true
     maximum-pool-size: 100

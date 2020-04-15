@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.yss.id.server.context.ContextFactory;
 import com.yss.id.server.context.ContextSupport;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.MethodParameter;
@@ -26,7 +25,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 @ControllerAdvice
 public class ResponseAdvisor implements ResponseBodyAdvice<Object> {
 
-	private Logger logger = LoggerFactory.getLogger(RequestAdvisor.class);
+	private Logger logger = LoggerFactory.getLogger(ResponseAdvisor.class);
 
 	private final String BASE_PACKAGE = "com.yss";
 
@@ -47,13 +46,18 @@ public class ResponseAdvisor implements ResponseBodyAdvice<Object> {
 		ContextSupport context = ContextFactory.getContext();
 		long endTime = System.currentTimeMillis();
 
-		rootNode.put("status", ((ServletServerHttpResponse) response).getServletResponse().getStatus());
-		rootNode.put("startTime", context.getParameter("startTime"));
-		rootNode.put("endTime", endTime);
-		rootNode.put("time",  endTime - Long.parseLong(context.getParameter("startTime")));
-		rootNode.put("response", JSON.toJSONString(body));
+		try {
+			rootNode.put("uri", request.getURI().getPath());
+			rootNode.put("status", ((ServletServerHttpResponse) response).getServletResponse().getStatus());
+			rootNode.put("startTime", context.getParameter("startTime"));
+			rootNode.put("endTime", endTime);
+			rootNode.put("time",  endTime - Long.parseLong(context.getParameter("startTime")));
+			rootNode.put("response", JSON.toJSONString(body));
 
-		logger.info(rootNode.toString());
+			logger.info(rootNode.toString());
+		}catch (Exception e){
+			e.printStackTrace();
+		}
 
 		return body;
 	}
