@@ -7,6 +7,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+
+import javax.annotation.PostConstruct;
 
 /**
  * todo 异常处理
@@ -15,6 +18,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
  *
  */
 @SpringBootApplication
+@EnableJpaAuditing
 @EnableConfigurationProperties(IdServerProperties.class)
 public class Application extends SpringBootServletInitializer {
 

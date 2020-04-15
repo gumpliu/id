@@ -7,13 +7,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigInteger;
+import java.sql.Date;
+import java.sql.Timestamp;
 
 /**
  * @Author: gumpLiu
  *
  * @Date: 2020-03-24 10:59
  */
-public interface AllocRepository extends JpaRepository<AllocEntity, Long> {
+public interface AllocRepository extends JpaRepository<AllocEntity, String> {
 
     @Query("SELECT a from AllocEntity a where a.bizTag = :bizTag ")
     AllocEntity findByBizTag(@Param("bizTag") String bizTag);

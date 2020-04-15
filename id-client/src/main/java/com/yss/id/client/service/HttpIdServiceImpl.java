@@ -71,10 +71,10 @@ public class HttpIdServiceImpl implements IdService {
     private SegmentId romoteLoadSegment(String url){
 
         logger.info("romote load segment start, url={}", url);
-        //todo 添加重试机制
         String response = HttpUtils.post(url,5000, 5000);
         logger.info("romote load segment end, response={}", response);
         if (response == null || "".equals(response.trim())) {
+            logger.error("romote load next segment error，id-server exception or segment enable is false");
             return null;
         }
         SegmentId segmentId  = JSON.parseObject(response, SegmentId.class);
@@ -93,6 +93,7 @@ public class HttpIdServiceImpl implements IdService {
         String response = HttpUtils.post(url,5000, 5000);
         logger.info(" romote load snowflake end, response={}",  response);
         if (response == null || "".equals(response.trim())) {
+            logger.error("romote load next snowflake error，id-server exception or snowflake enable is false!");
             return null;
         }
 

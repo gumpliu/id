@@ -1,12 +1,16 @@
 package com.yss.id.server.domain.segment.entity;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.math.BigInteger;
 import java.util.Date;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "t_alloc")
 public class AllocEntity {
 
@@ -34,10 +38,12 @@ public class AllocEntity {
     private Long version;
 
     /** 创建时间 */
+    @CreatedDate
     @Column(name = "create_time")
     private Date createTime;
 
     /** 修改时间 */
+    @LastModifiedDate
     @Column(name = "update_time")
     private Date updateTime;
 

@@ -93,7 +93,6 @@ public class SegmentIdServiceImpl implements SegmentIdService {
         }
     }
 
-
     /**
      * 获取 AllocEntity
      * @param bizTag
@@ -127,8 +126,6 @@ public class SegmentIdServiceImpl implements SegmentIdService {
         allocEntity.setBizTag(bizTag);
         allocEntity.setMaxId(BigInteger.ZERO);
         allocEntity.setStep(idServerProperties.getSegement().getStep());
-        allocEntity.setCreateTime(now);
-        allocEntity.setUpdateTime(now);
         allocEntity.setVersion(BigInteger.ONE.longValue());
         return  allocRepository.save(allocEntity);
     }
