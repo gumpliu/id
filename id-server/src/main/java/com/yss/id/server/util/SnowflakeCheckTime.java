@@ -2,6 +2,8 @@ package com.yss.id.server.util;
 
 import com.yss.id.core.exception.IdException;
 import com.yss.id.server.config.IdServerProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.stereotype.Component;
@@ -10,7 +12,6 @@ import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Date;
 
 /**
  * @Description: snowflake模式 时间检验
@@ -20,6 +21,8 @@ import java.util.Date;
  **/
 @Component
 public class SnowflakeCheckTime {
+
+    private static final Logger logger = LoggerFactory.getLogger(SnowflakeCheckTime.class);
 
     @Autowired
     private IdServerProperties idServerProperties;
@@ -40,7 +43,11 @@ public class SnowflakeCheckTime {
 
             Timestamp timestamp = (Timestamp) entityManager.createNativeQuery(getDBTimeSql()).getSingleResult();
 
-            BigDecimal differenceValue = BigDecimal.valueOf(timestamp.getTime()).subtract(BigDecimal.valueOf(System.currentTimeMillis()));
+            long currentTime = System.currentTimeMillis();
+
+            logger.info("checkout time, currentTime={},dbTime={}", currentTime, timestamp.getTime());
+
+            BigDecimal differenceValue = BigDecimal.valueOf(timestamp.getTime()).subtract(BigDecimal.valueOf(currentTime));
 
             if(differenceValue.compareTo(MAX_DIFFERENCE_VALUE) == 1){
                 throw new IdException("Snowflake time is error!");

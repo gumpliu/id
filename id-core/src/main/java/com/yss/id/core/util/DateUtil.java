@@ -2076,17 +2076,22 @@ public final class DateUtil {
 			throw new RuntimeException("BASE_991P");
 		}
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
+	public static long dateTransformBetweenTimeZone(Date sourceDate,
+													TimeZone sourceTimeZone, TimeZone targetTimeZone) {
+		return sourceDate.getTime() - sourceTimeZone.getRawOffset() + targetTimeZone.getRawOffset();
+	}
+
+
+	public static long convertDateBetweenTimeZone(String timeZone,Long time){
+		DateFormat dateFormat = new SimpleDateFormat("Z");
+		String localTimeZone = dateFormat.format(new Date());
+		TimeZone srcTimeZone = TimeZone.getTimeZone("GMT"+localTimeZone);
+		TimeZone destTimeZone = TimeZone.getTimeZone(timeZone);
+		return dateTransformBetweenTimeZone(new Date(time), srcTimeZone, destTimeZone);
+	}
+
+
 	public static void main( String[] args ) throws Exception {		
 		System.out.println("---"+DateUtil.toDate("2000-10-11"));
 		System.out.println("---"+DateUtil.toDate("20001011"));

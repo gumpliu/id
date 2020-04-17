@@ -14,7 +14,7 @@ spring:
 #    username: sofa_007
 #    password: sofa_007
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/sofa?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8
+    url: jdbc:mysql://127.0.0.1:3306/sofa?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8
     username: root
     password: 123456
     default-auto-commit: true
