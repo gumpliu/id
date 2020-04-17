@@ -26,6 +26,10 @@ public class SnowflakeCheckTimeTask {
 
         try{
             snowflakeCheckTime.chekoutTime();
+            
+            if(!idServerProperties.getSnowflake().isEnable()){
+                idServerProperties.getSnowflake().setEnable(true);
+            }
         }catch (Exception e){
             logger.error(e.getMessage());
             //关闭snowflake模式

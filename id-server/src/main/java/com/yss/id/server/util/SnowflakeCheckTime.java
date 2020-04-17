@@ -33,7 +33,7 @@ public class SnowflakeCheckTime {
     @Autowired
     private ConfigurableEnvironment configurableEnvironment;
 
-    private final static BigDecimal MAX_DIFFERENCE_VALUE = BigDecimal.valueOf(5000);
+    private final static BigDecimal MAX_DIFFERENCE_VALUE = BigDecimal.valueOf(30000);
 
 
     @PostConstruct
@@ -49,7 +49,7 @@ public class SnowflakeCheckTime {
 
             BigDecimal differenceValue = BigDecimal.valueOf(timestamp.getTime()).subtract(BigDecimal.valueOf(currentTime));
 
-            if(differenceValue.compareTo(MAX_DIFFERENCE_VALUE) == 1){
+            if(differenceValue.abs().compareTo(MAX_DIFFERENCE_VALUE) == 1){
                 throw new IdException("Snowflake time is error!");
             }
         }
