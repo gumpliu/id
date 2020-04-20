@@ -21,14 +21,14 @@ public interface AllocRepository extends JpaRepository<AllocEntity, String> {
     AllocEntity findByBizTag(@Param("bizTag") String bizTag);
 
     @Modifying
-    @Query("update AllocEntity a set a.maxId = a.maxId + :step, a.step = :step, a.version = a.version + 1  " +
+    @Query("update AllocEntity a set a.maxId = :maxId, a.step = :step, a.version = a.version + 1  " +
             " where a.bizTag = :bizTag and a.version = :version")
-    int updateByBizTag(@Param("bizTag") String bizTag, @Param("step") BigInteger step, @Param("version") Long version);
+    int updateByBizTag(@Param("bizTag") String bizTag, @Param("maxId") BigInteger maxId, @Param("step") Integer step, @Param("version") Long version);
 
 
     @Modifying
-    @Query("update AllocEntity a set a.maxId = a.step, a.step = :step, a.version = a.version + 1  " +
+    @Query("update AllocEntity a set a.maxId = :maxId, a.step = :step, a.version = a.version + 1  " +
             " where a.bizTag = :bizTag and a.version = :version ")
-    int initSegmentByBizTag(@Param("bizTag") String bizTag, @Param("step") BigInteger step, @Param("version") Long version);
+    int initSegmentByBizTag(@Param("bizTag") String bizTag, @Param("maxId") BigInteger maxId, @Param("step") Integer step, @Param("version") Long version);
 
 }

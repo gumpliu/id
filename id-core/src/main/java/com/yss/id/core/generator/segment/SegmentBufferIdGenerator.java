@@ -64,26 +64,29 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
 
         putBizTagLen(bizTag, length);
 
-        String nextId = nextId(bizTag);
-
-        //nextId超过位数最大值，segment重新初始化
-        if(BigDecimal.valueOf(Long.parseLong(nextId)).compareTo(BigDecimal.valueOf(MathUtil.maxValue(bizTag, length))) == 1 ){
-            synchronized (baseMap.get(bizTag)){
-                SegmentBuffer segmentBuffer = (SegmentBuffer) baseMap.get(bizTag);
+        SegmentBuffer segmentBuffer = (SegmentBuffer) getBuffer(bizTag);
+        String nextId = "";
+        synchronized (segmentBuffer){
+            nextId = nextId(bizTag);
+            //nextId超过位数最大值，segment重新初始化
+            if(BigDecimal.valueOf(Long.parseLong(nextId)).compareTo(BigDecimal.valueOf(MathUtil.maxValue(bizTag, length))) == 1 ){
                 SegmentId segmentId = idService.initSegmentId(bizTag);
-                Segment segment = segmentBuffer.getCurrent();
+                Segment segment = new Segment(segmentBuffer);
                 segment.setMax(segmentId.getMaxId());
                 segment.setStep(segmentId.getStep());
                 AtomicLong currentId = new AtomicLong(segment.getMax() - segment.getStep());
                 segment.setValue(currentId);
+
+                segmentBuffer.getBuffers()[segmentBuffer.getCurrentPos()] = segment;
                 //另一缓存设置为空
                 if(segmentBuffer.getBuffers()[segmentBuffer.nextPos()] != null){
                     segmentBuffer.getBuffers()[segmentBuffer.nextPos()] = null;
                 }
+                nextId = nextId(bizTag);
             }
-
-            nextId = nextId(bizTag);
         }
+
+
 
         return MathUtil.appendZero(nextId, length);
     }

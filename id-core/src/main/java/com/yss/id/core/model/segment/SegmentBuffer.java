@@ -47,8 +47,6 @@ public class SegmentBuffer extends BaseBuffer<Segment> {
 
         long initValue = currentBuffer.getMax() - currentBuffer.getStep();
 
-        System.out.println(JSON.toJSONString(currentBuffer.getBuffer()));
-
         BigDecimal currentThreshold = BigDecimal.valueOf(currentBuffer.getValue().get())
                 .subtract(BigDecimal.valueOf(initValue))
                 .divide(BigDecimal.valueOf(currentBuffer.getStep()), 2, BigDecimal.ROUND_HALF_UP)

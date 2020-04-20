@@ -37,11 +37,14 @@ public class SegmentIdServiceImpl implements SegmentIdService {
     @Override
     @Transactional
     public SegmentId getSegment(String bizTag) {
+        int step = getStep();
 
-       while (true){
+        while (true){
             AllocEntity allocEntity = getAllocEntity(bizTag);
 
-            int updateNum = allocRepository.updateByBizTag(bizTag, getStep(), allocEntity.getVersion());
+            BigInteger newMaxId = BigInteger.valueOf(step).add(allocEntity.getMaxId());
+
+            int updateNum = allocRepository.updateByBizTag(bizTag, newMaxId, step, allocEntity.getVersion());
 
             if(updateNum == 1){
                 return createSegmentId(allocEntity.getMaxId());
@@ -55,6 +58,8 @@ public class SegmentIdServiceImpl implements SegmentIdService {
 
         long maxValue  = MathUtil.maxValue(bizTag, length);
 
+        int step = getStep();
+
         while (true){
             AllocEntity allocEntity = getAllocEntity(bizTag);
 
@@ -63,11 +68,12 @@ public class SegmentIdServiceImpl implements SegmentIdService {
             int updateNum;
             if(MathUtil.greaterThanEqual(allocEntity.getMaxId().longValue(), maxValue)){
                 //初始化segment
-                updateNum = allocRepository.initSegmentByBizTag(bizTag, getStep(), allocEntity.getVersion());
+                updateNum = allocRepository.initSegmentByBizTag(bizTag, BigInteger.valueOf(step), step, allocEntity.getVersion());
 
                 maxId = BigInteger.ZERO;
             }else{
-                updateNum = allocRepository.updateByBizTag(bizTag, getStep(), allocEntity.getVersion());
+                BigInteger newMaxId = BigInteger.valueOf(step).add(allocEntity.getMaxId());
+                updateNum = allocRepository.updateByBizTag(bizTag, newMaxId,step, allocEntity.getVersion());
             }
 
             if(updateNum == 1){
@@ -82,10 +88,12 @@ public class SegmentIdServiceImpl implements SegmentIdService {
     @Transactional
     public SegmentId initSegment(String bizTag) {
 
+        int step = getStep();
+
         while (true){
             AllocEntity allocEntity = getAllocEntity(bizTag);
 
-            int updateNum = allocRepository.initSegmentByBizTag(bizTag, getStep(), allocEntity.getVersion());
+            int updateNum = allocRepository.initSegmentByBizTag(bizTag, BigInteger.valueOf(step) , step, allocEntity.getVersion());
 
             if(updateNum == 1){
                 return createSegmentId(BigInteger.ZERO);
@@ -153,8 +161,8 @@ public class SegmentIdServiceImpl implements SegmentIdService {
         return new SegmentId(currentMaxId.add(BigInteger.valueOf(step)).longValue(), step, maxLength);
     }
 
-    private BigInteger getStep(){
-        return BigInteger.valueOf(idServerProperties.getSegement().getStep());
+    private Integer getStep(){
+        return idServerProperties.getSegement().getStep();
     }
 
 }

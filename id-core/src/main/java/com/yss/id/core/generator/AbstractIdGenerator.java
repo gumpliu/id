@@ -53,6 +53,11 @@ public abstract class AbstractIdGenerator<T> {
         String nextId = "";
 
         synchronized (baseBuffer){
+
+            while (baseBuffer.getThreadRunning().get()){
+                waitAndSleep(baseBuffer);
+            }
+
             //获取下一缓存
             loadNextBuffer(bizTag);
 
@@ -128,12 +133,6 @@ public abstract class AbstractIdGenerator<T> {
         BaseBuffer baseBuffer  = baseMap.get(bizTag);
 
         T currentBuffer = (T) baseBuffer.getCurrent();
-
-        if(currentBuffer == null){
-            while (baseBuffer.getThreadRunning().get()){
-                waitAndSleep(baseBuffer);
-            }
-        }
 
         T nextBuffer = (T) baseBuffer.getBuffers()[baseBuffer.nextPos()];
 
