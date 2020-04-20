@@ -2,8 +2,11 @@ package com.yss.id.core.generator;
 
 import com.alibaba.fastjson.JSON;
 import com.yss.id.core.constans.Constants;
+import com.yss.id.core.exception.IdException;
 import com.yss.id.core.model.BaseBuffer;
 import com.yss.id.core.service.IdService;
+
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +43,10 @@ public abstract class AbstractIdGenerator<T> {
      */
     public String nextId(String bizTag){
         logger.info(" Get id start, param bizTag = {}.", bizTag);
+
+        if(StringUtils.isEmpty(bizTag)){
+            throw new IdException("nextId bizTag Can not be empty ！！");
+        }
 
         BaseBuffer<T> baseBuffer = getBuffer(bizTag);
 

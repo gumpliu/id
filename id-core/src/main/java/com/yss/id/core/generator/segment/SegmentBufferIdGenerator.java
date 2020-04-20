@@ -1,5 +1,6 @@
 package com.yss.id.core.generator.segment;
 
+import com.yss.id.core.exception.IdException;
 import com.yss.id.core.generator.AbstractIdGenerator;
 import com.yss.id.core.model.BaseBuffer;
 import com.yss.id.core.model.SegmentId;
@@ -7,6 +8,8 @@ import com.yss.id.core.model.segment.Segment;
 import com.yss.id.core.model.segment.SegmentBuffer;
 import com.yss.id.core.service.IdService;
 import com.yss.id.core.util.MathUtil;
+
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +52,15 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
      */
     public String fixedLengthNextId(String bizTag, int length){
         logger.info("Get fixed length id, bizTag={}, length={}", bizTag, length);
+
+        if(StringUtils.isEmpty(bizTag)){
+            throw new IdException("fixedLengthNextId bizTag Can not be empty ！！");
+        }
+
+        if(length <=0){
+            throw new IdException("fixedLengthNextId length Must be Greater than 0 ！！");
+        }
+
         //todo 隐式为bizTag -> length
         putBizTagLen(bizTag, length);
 
