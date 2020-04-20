@@ -82,7 +82,7 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
                 if(segmentBuffer.getBuffers()[segmentBuffer.nextPos()] != null){
                     segmentBuffer.getBuffers()[segmentBuffer.nextPos()] = null;
                 }
-                nextId = nextId(bizTag);
+                nextId = segmentBuffer.nextId();
             }
         }
 
