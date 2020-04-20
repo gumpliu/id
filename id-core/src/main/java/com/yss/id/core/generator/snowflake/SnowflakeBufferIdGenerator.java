@@ -43,18 +43,16 @@ public class SnowflakeBufferIdGenerator extends AbstractIdGenerator<Snowflake> {
     }
 
     @Override
-    protected void romoteLoadNextBuffer(String bizTag) {
+    protected Snowflake romoteLoadNextBuffer(String bizTag) {
         //远程调用服务获取segment
         SnowflakeBuffer snowflakeBuffer = (SnowflakeBuffer) baseMap.get(bizTag);
 
-        Snowflake snowflake = getSnowflake(snowflakeBuffer);
-
-        snowflakeBuffer.getBuffers()[snowflakeBuffer.nextPos()] = snowflake;
+        return getSnowflake(snowflakeBuffer);
     }
 
     /**
-     * 获取segmentId
-     * @param segmentBuffer
+     * 获取Snowflake
+     * @param snowflakeBuffer
      * @return
      */
     private Snowflake getSnowflake(SnowflakeBuffer snowflakeBuffer){

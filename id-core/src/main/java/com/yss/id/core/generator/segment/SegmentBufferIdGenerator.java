@@ -13,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -61,20 +62,16 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
             throw new IdException("fixedLengthNextId length Must be Greater than 0 ！！");
         }
 
-        //todo 隐式为bizTag -> length
         putBizTagLen(bizTag, length);
 
-        SegmentBuffer segmentBuffer = (SegmentBuffer) getBuffer(bizTag);
+        String nextId = nextId(bizTag);
 
-        synchronized (segmentBuffer){
-            Segment segment = segmentBuffer.getCurrent();
-
-            //nextId = currentId + 1，currentId初始默认为0
-            segment.getValue().incrementAndGet();
-
-            //nextId超过位数最大值，segment重新初始化
-            if(segment.getValue().get() > MathUtil.maxValue(bizTag, length)){
+        //nextId超过位数最大值，segment重新初始化
+        if(BigDecimal.valueOf(Long.parseLong(nextId)).compareTo(BigDecimal.valueOf(MathUtil.maxValue(bizTag, length))) == 1 ){
+            synchronized (baseMap.get(bizTag)){
+                SegmentBuffer segmentBuffer = (SegmentBuffer) baseMap.get(bizTag);
                 SegmentId segmentId = idService.initSegmentId(bizTag);
+                Segment segment = segmentBuffer.getCurrent();
                 segment.setMax(segmentId.getMaxId());
                 segment.setStep(segmentId.getStep());
                 AtomicLong currentId = new AtomicLong(segment.getMax() - segment.getStep());
@@ -83,21 +80,12 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
                 if(segmentBuffer.getBuffers()[segmentBuffer.nextPos()] != null){
                     segmentBuffer.getBuffers()[segmentBuffer.nextPos()] = null;
                 }
-
-                //重新计算nextId
-                segment.getValue().incrementAndGet();
             }
 
-            //获取下一缓存
-            loadNextBuffer(bizTag);
-            //nextId 等于maxId时，切换缓存
-            if(segmentBuffer.switchBufer()){
-                segmentBuffer.switchPos();
-                segmentBuffer.setAlreadyLoadBuffer(false);
-            }
-
-            return MathUtil.appendZero(segment.getValue().toString(), length);
+            nextId = nextId(bizTag);
         }
+
+        return MathUtil.appendZero(nextId, length);
     }
 
 
@@ -118,15 +106,13 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
     }
 
     @Override
-    protected void romoteLoadNextBuffer(String bizTag) {
+    protected Segment romoteLoadNextBuffer(String bizTag) {
         logger.info("segment romote load next buffer, bizTag={}", bizTag);
 
         //远程调用服务获取segment
         SegmentBuffer segmentBuffer = (SegmentBuffer) baseMap.get(bizTag);
 
-        Segment segment = getSegmentId(segmentBuffer);
-
-        segmentBuffer.getBuffers()[segmentBuffer.nextPos()] = segment;
+        return getSegmentId(segmentBuffer);
     }
 
 

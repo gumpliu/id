@@ -42,7 +42,7 @@ public abstract class AbstractIdGenerator<T> {
      * @return
      */
     public String nextId(String bizTag){
-        logger.info(" Get id start, param bizTag = {}.", bizTag);
+        logger.info("Get id start, param bizTag = {}.", bizTag);
 
         if(StringUtils.isEmpty(bizTag)){
             throw new IdException("nextId bizTag Can not be empty ！！");
@@ -56,10 +56,6 @@ public abstract class AbstractIdGenerator<T> {
             //获取下一缓存
             loadNextBuffer(bizTag);
 
-            while (baseBuffer.getThreadRunning().get()){
-                waitAndSleep(baseBuffer);
-            }
-
             nextId = baseBuffer.nextId();
 
             //nextId 等于maxId时，切换缓存
@@ -70,7 +66,7 @@ public abstract class AbstractIdGenerator<T> {
                 baseBuffer.setAlreadyLoadBuffer(false);
             }
         }
-        logger.info(" Get id end, return nextId is {}.", nextId);
+        logger.info("Get id end, return nextId is {}.", nextId);
 
         return nextId;
     }
@@ -125,7 +121,6 @@ public abstract class AbstractIdGenerator<T> {
 
     /**
      * 加载下一个缓存，超过设置阈值 获取下一个缓存
-     * todo 开启线程运行
      *
      * @param bizTag
      */
@@ -134,10 +129,15 @@ public abstract class AbstractIdGenerator<T> {
 
         T currentBuffer = (T) baseBuffer.getCurrent();
 
+        if(currentBuffer == null){
+            while (baseBuffer.getThreadRunning().get()){
+                waitAndSleep(baseBuffer);
+            }
+        }
+
         T nextBuffer = (T) baseBuffer.getBuffers()[baseBuffer.nextPos()];
 
         //是否需要获取下一缓存，维护nextReady状态
-
         if(!baseBuffer.isAlreadyLoadBuffer()
                 && baseBuffer.isloadNextBuffer(currentBuffer, nextBuffer)
                 && baseBuffer.getThreadRunning().compareAndSet(false, true)){
@@ -148,7 +148,10 @@ public abstract class AbstractIdGenerator<T> {
                 if(!baseBuffer.isAlreadyLoadBuffer()){
                     //远程调用服务获取id集合，并添加至缓存中
                     try {
-                        romoteLoadNextBuffer(bizTag);
+                        T buffer =  romoteLoadNextBuffer(bizTag);
+
+                        baseBuffer.getBuffers()[baseBuffer.nextPos()] = buffer;
+
                         baseBuffer.setAlreadyLoadBuffer(true);
 
                         if(logger.isDebugEnabled()){
@@ -198,6 +201,6 @@ public abstract class AbstractIdGenerator<T> {
      *
      * @param bizTag
      */
-    protected abstract void romoteLoadNextBuffer(String bizTag);
+    protected abstract T romoteLoadNextBuffer(String bizTag);
 
 }
