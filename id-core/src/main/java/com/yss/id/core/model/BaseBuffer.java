@@ -27,14 +27,14 @@ public abstract class BaseBuffer<T> {
      * 根据当前缓存获取id
      * @return
      */
-    public abstract BigDecimal nextId();
+    public abstract String nextId();
 
     /**
      * 是否切换至下一缓存，当id消耗完后切换
      *
      * @return
      */
-    public  abstract boolean switchBufer(BigDecimal nextId);
+    public  abstract boolean switchBufer(String nextId);
 
     /**
      * 当前buffer 是否为空
@@ -48,7 +48,7 @@ public abstract class BaseBuffer<T> {
      */
     public abstract BigDecimal getMaxId();
 
-    public boolean isInitBuffer(BigDecimal nextId){
+    public boolean isInitBuffer(String nextId){
         return false;
     }
 
@@ -58,7 +58,7 @@ public abstract class BaseBuffer<T> {
      * @param nextId
      * @return
      */
-    public abstract boolean isloadNextBuffer(BigDecimal nextId);
+    public abstract boolean isloadNextBuffer(String nextId);
 
 
     public String getKey() {
@@ -127,5 +127,9 @@ public abstract class BaseBuffer<T> {
 
     public void setAlreadyLoadBuffer(boolean alreadyLoadBuffer) {
         this.alreadyLoadBuffer = alreadyLoadBuffer;
+    }
+
+    public BigDecimal strToDecimal(String value){
+      return new BigDecimal(value);
     }
 }

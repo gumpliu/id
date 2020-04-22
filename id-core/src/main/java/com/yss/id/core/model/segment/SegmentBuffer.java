@@ -18,24 +18,22 @@ public class SegmentBuffer extends BaseBuffer<Segment> {
 
 
     @Override
-    public BigDecimal nextId() {
-        synchronized (this){
-            return BigDecimal.valueOf(getCurrent().getValue().incrementAndGet());
-        }
+    public synchronized String nextId() {
+       return String.valueOf(getCurrent().getValue().incrementAndGet());
     }
 
     @Override
-    public boolean isInitBuffer(BigDecimal nextId){
+    public boolean isInitBuffer(String nextId){
         if(maxLength <= 0){
             return false;
         }
-        return nextId.compareTo(BigDecimal.valueOf(MathUtil.maxValue(getKey(), maxLength))) == 1;
+        return strToDecimal(nextId).compareTo(BigDecimal.valueOf(MathUtil.maxValue(getKey(), maxLength))) == 1;
     }
 
 
     @Override
-    public boolean switchBufer(BigDecimal nextId) {
-        return getMaxId().compareTo(nextId) < 0;
+    public boolean switchBufer(String nextId) {
+        return getMaxId().compareTo(strToDecimal(nextId)) < 0;
     }
 
     @Override
@@ -49,9 +47,9 @@ public class SegmentBuffer extends BaseBuffer<Segment> {
     }
 
     @Override
-    public boolean isloadNextBuffer(BigDecimal nextId) {
+    public boolean isloadNextBuffer(String nextId) {
 
-        return nextId.compareTo(getCurrent().getLoadingValue()) > 0;
+        return strToDecimal(nextId).compareTo(getCurrent().getLoadingValue()) > 0;
     }
 
 

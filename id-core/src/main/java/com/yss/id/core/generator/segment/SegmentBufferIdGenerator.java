@@ -69,7 +69,7 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
     }
 
     @Override
-    public  void initBuffer(BaseBuffer baseBuffer, BigDecimal nextId) {
+    public  void initBuffer(BaseBuffer baseBuffer, String nextId) {
 
         if(baseBuffer.isInitBuffer(nextId)){
             synchronized (baseBuffer){

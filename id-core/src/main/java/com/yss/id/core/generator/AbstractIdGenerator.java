@@ -53,10 +53,11 @@ public abstract class AbstractIdGenerator<T> {
 
         while (true){
             if(baseBuffer.isCurrentEmpty()){
-                loadCurrent(baseBuffer, BigDecimal.ZERO);
+                loadCurrent(baseBuffer, BigDecimal.ZERO.toString());
+                continue;
             }
             //获取当前id 比对id是否能用
-            BigDecimal nextId = baseBuffer.nextId();
+            String nextId = baseBuffer.nextId();
             //id是否可以使用
             if(baseBuffer.switchBufer(nextId)){
                 loadCurrent(baseBuffer, nextId);
@@ -74,7 +75,7 @@ public abstract class AbstractIdGenerator<T> {
      * 重新初始化baseBuffer
      * @param baseBuffer
      */
-    public  void initBuffer(BaseBuffer baseBuffer, BigDecimal nextId){
+    public  void initBuffer(BaseBuffer baseBuffer, String nextId){
 
     }
 
@@ -82,7 +83,7 @@ public abstract class AbstractIdGenerator<T> {
      * 获取current buffer
      * @param baseBuffer
      */
-    public void loadCurrent(BaseBuffer baseBuffer, BigDecimal nextId){
+    public void loadCurrent(BaseBuffer baseBuffer, String nextId){
         if(baseBuffer.isCurrentEmpty()
                 || baseBuffer.switchBufer(nextId)){
             synchronized (baseBuffer){
@@ -152,9 +153,10 @@ public abstract class AbstractIdGenerator<T> {
     /**
      * 加载下一个缓存，超过设置阈值 获取下一个缓存
      *
-     * @param bizTag
+     * @param baseBuffer
+     * @param nextId
      */
-    protected void loadNextBuffer(BaseBuffer baseBuffer, BigDecimal nextId){
+    protected void loadNextBuffer(BaseBuffer baseBuffer, String nextId){
 
         //是否需要获取下一缓存，维护nextReady状态
         if(!baseBuffer.isAlreadyLoadBuffer()

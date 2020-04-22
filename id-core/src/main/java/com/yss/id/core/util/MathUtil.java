@@ -72,7 +72,6 @@ public class MathUtil {
             }
             return initValue.toString() + id ;
         }else{
-            //todo 定义自己异常
             throw new IdException("id length is error !!");
         }
     }

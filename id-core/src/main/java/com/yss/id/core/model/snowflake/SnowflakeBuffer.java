@@ -1,10 +1,10 @@
 package com.yss.id.core.model.snowflake;
 
-import com.yss.id.core.constans.Constants;
 import com.yss.id.core.constans.IDFormatEnum;
 import com.yss.id.core.model.BaseBuffer;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * @Description: 雪花模式返回结构
@@ -16,18 +16,19 @@ public class SnowflakeBuffer extends BaseBuffer<Snowflake> {
 
     private IDFormatEnum format;
 
+    private int loadingValue;
+
     public SnowflakeBuffer(){
         buffers =  new Snowflake[]{new Snowflake(this), null};
     }
 
     @Override
-    public BigDecimal nextId() {
-        String nextId = getCurrent().getQueue().remove();
-        return BigDecimal.valueOf(Long.parseLong(nextId));
+    public String nextId() {
+        return getCurrent().getQueue().remove();
     }
 
     @Override
-    public boolean switchBufer(BigDecimal nextId) {
+    public boolean switchBufer(String nextId) {
         return getCurrent().getQueue().isEmpty();
     }
 
@@ -43,31 +44,25 @@ public class SnowflakeBuffer extends BaseBuffer<Snowflake> {
     }
 
     @Override
-    public boolean isloadNextBuffer(BigDecimal nextId) {
-        return false;
-    }
+    public boolean isloadNextBuffer(String nextId) {
 
-//    @Override
-//    public boolean isloadNextBuffer(Snowflake currentBuffer, Snowflake nextBuffer) {
-//
-//        //已经获取下一缓存信息
-//        if(nextBuffer != null && !nextBuffer.getQueue().isEmpty()){
-//            return false;
-//        }
-//
-//        BigDecimal currentThreshold = BigDecimal.valueOf(currentBuffer.getStep())
-//                .subtract(BigDecimal.valueOf(currentBuffer.getQueue().size()))
-//                .divide(BigDecimal.valueOf(currentBuffer.getStep()), 2, BigDecimal.ROUND_HALF_UP)
-//                .multiply(BigDecimal.valueOf(100));
-//
-//        return currentThreshold.intValue() > Constants.ID_THRESHOLDVALUE;
-//    }
+        return getCurrent().getQueue().size() <= loadingValue;
+    }
 
     public IDFormatEnum getFormat() {
         return format;
     }
 
+
     public void setFormat(IDFormatEnum format) {
         this.format = format;
+    }
+
+    public int getLoadingValue() {
+        return loadingValue;
+    }
+
+    public void setLoadingValue(int loadingValue) {
+        this.loadingValue = loadingValue;
     }
 }

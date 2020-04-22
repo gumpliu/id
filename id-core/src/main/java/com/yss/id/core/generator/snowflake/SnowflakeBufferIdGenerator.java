@@ -1,5 +1,6 @@
 package com.yss.id.core.generator.snowflake;
 
+import com.yss.id.core.constans.Constants;
 import com.yss.id.core.constans.IDFormatEnum;
 import com.yss.id.core.generator.AbstractIdGenerator;
 import com.yss.id.core.model.BaseBuffer;
@@ -8,6 +9,7 @@ import com.yss.id.core.model.snowflake.Snowflake;
 import com.yss.id.core.model.snowflake.SnowflakeBuffer;
 import com.yss.id.core.service.IdService;
 
+import java.math.BigDecimal;
 import java.util.LinkedList;
 
 /**
@@ -39,6 +41,8 @@ public class SnowflakeBufferIdGenerator extends AbstractIdGenerator<Snowflake> {
 
         snowflakeBuffer.getBuffers()[snowflakeBuffer.getCurrentPos()] = snowflake;
 
+        snowflakeBuffer.setLoadingValue(getLoadingValue(snowflake.getStep()).intValue());
+
         return snowflakeBuffer;
     }
 
@@ -63,5 +67,18 @@ public class SnowflakeBufferIdGenerator extends AbstractIdGenerator<Snowflake> {
         snowflake.setQueue(new LinkedList<String>(snowflakeId.getIds()));
 
         return snowflake;
+    }
+
+    /**
+     * 获取loadingValue
+     * @param step
+     * @return
+     */
+    private BigDecimal getLoadingValue(int step){
+
+        BigDecimal bStep = BigDecimal.valueOf(step);
+        BigDecimal usedNum = bStep.divide(BigDecimal.valueOf(Constants.ID_THRESHOLDVALUE), 0, BigDecimal.ROUND_HALF_UP);
+
+       return bStep.subtract(usedNum);
     }
 }
