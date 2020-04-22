@@ -21,30 +21,47 @@ public class SnowflakeBuffer extends BaseBuffer<Snowflake> {
     }
 
     @Override
-    public String nextId() {
-        return getCurrent().getQueue().remove();
+    public BigDecimal nextId() {
+        String nextId = getCurrent().getQueue().remove();
+        return BigDecimal.valueOf(Long.parseLong(nextId));
     }
 
     @Override
-    public boolean switchBufer() {
+    public boolean switchBufer(BigDecimal nextId) {
         return getCurrent().getQueue().isEmpty();
     }
 
     @Override
-    public boolean isloadNextBuffer(Snowflake currentBuffer, Snowflake nextBuffer) {
-
-        //已经获取下一缓存信息
-        if(nextBuffer != null && !nextBuffer.getQueue().isEmpty()){
-            return false;
-        }
-
-        BigDecimal currentThreshold = BigDecimal.valueOf(currentBuffer.getStep())
-                .subtract(BigDecimal.valueOf(currentBuffer.getQueue().size()))
-                .divide(BigDecimal.valueOf(currentBuffer.getStep()), 2, BigDecimal.ROUND_HALF_UP)
-                .multiply(BigDecimal.valueOf(100));
-
-        return currentThreshold.intValue() > Constants.ID_THRESHOLDVALUE;
+    public boolean isCurrentEmpty() {
+        return false;
     }
+
+
+    @Override
+    public BigDecimal getMaxId() {
+        return null;
+    }
+
+    @Override
+    public boolean isloadNextBuffer(BigDecimal nextId) {
+        return false;
+    }
+
+//    @Override
+//    public boolean isloadNextBuffer(Snowflake currentBuffer, Snowflake nextBuffer) {
+//
+//        //已经获取下一缓存信息
+//        if(nextBuffer != null && !nextBuffer.getQueue().isEmpty()){
+//            return false;
+//        }
+//
+//        BigDecimal currentThreshold = BigDecimal.valueOf(currentBuffer.getStep())
+//                .subtract(BigDecimal.valueOf(currentBuffer.getQueue().size()))
+//                .divide(BigDecimal.valueOf(currentBuffer.getStep()), 2, BigDecimal.ROUND_HALF_UP)
+//                .multiply(BigDecimal.valueOf(100));
+//
+//        return currentThreshold.intValue() > Constants.ID_THRESHOLDVALUE;
+//    }
 
     public IDFormatEnum getFormat() {
         return format;

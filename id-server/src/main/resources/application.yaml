@@ -44,7 +44,7 @@ logging:
   config: classpath:logback-spring.xml
 id:
   segement:
-    step: 5
+    step: 1000
   snowflake:
     step: 1000
     workerId: 23

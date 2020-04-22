@@ -14,8 +14,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @Description: 菜单目录
@@ -31,7 +38,7 @@ public class IdController {
 	@Autowired
 	IdTestRepository idTestRepository;
 
-	private ExecutorService executorService  = Executors.newFixedThreadPool(5);
+	private ExecutorService executorService  = Executors.newFixedThreadPool(2);
 
 	@ResponseBody
 	@RequestMapping(value="/find/{bizTag}/{timeStr}", method = RequestMethod.GET, produces="application/json")
@@ -44,7 +51,6 @@ public class IdController {
 				TIdTest test = new TIdTest();
 				String id = IdUtil.getSegmentNextId(bizTag);
 				test.setTestId(id);
-				test.setId(id);
 				idTestRepository.save(test);
 			});
 
@@ -66,11 +72,62 @@ public class IdController {
 	}
 
 	@ResponseBody
+	@RequestMapping(value="/get/{bizTag}/{time}", method = RequestMethod.GET, produces="application/json")
+	public Result getId(@PathVariable String bizTag, @PathVariable long time) {
+
+		long startTime = System.currentTimeMillis();
+
+		for (int i= 0; i < time; i++){
+			IdUtil.getSegmentNextId(bizTag);
+		}
+		long startEndTime = System.currentTimeMillis() - startTime;
+		System.out.println("time=" + startEndTime);
+
+		return ResultFactory.success();
+	}
+
+	@ResponseBody
 	@RequestMapping(value="/find/fixed/{bizTag}", method = RequestMethod.GET, produces="application/json")
 	public Result fixedFind(@PathVariable String bizTag) {
 
-		String id = IdUtil.getSegmentFixedLengthNextId(bizTag);
-		return ResultFactory.success(id);
+		AtomicLong num = new AtomicLong(0);
+		for(;;){
+			executorService.execute(()->{
+				if(num.incrementAndGet() >= 27){
+					return;
+				}
+				TIdTest test = new TIdTest();
+				String id = IdUtil.getSegmentFixedLengthNextId(bizTag, 1);
+				test.setTestId(id);
+				idTestRepository.save(test);
+			});
+
+
+			if( num.get() >= 27){
+				break;
+			}
+		}
+
+		return ResultFactory.success("success");
+	}
+
+
+	@ResponseBody
+	@RequestMapping(value = "/findzwy/{bizTag}", method = RequestMethod.GET, produces = "application/json")
+	public Result findzwy(@PathVariable String bizTag) {
+		for(int j = 0; j< 10000; j ++ ){
+			IdUtil.getSegmentNextId(bizTag);
+		}
+
+		return ResultFactory.success("success");
+	}
+
+	public Result testResult(boolean result, String msg, Object object) {
+		if (result) {
+			return new Result("Sucess", msg, object);
+		} else {
+			return new Result("Fail", msg, object);
+		}
 	}
 
 
@@ -95,7 +152,6 @@ public class IdController {
 						TIdTest test = new TIdTest();
 						String id = IdUtil.getSnowflakeNextId(IDFormatEnum.ID_FORMAT_MILLISECOND);
 						test.setTestId(id);
-						test.setId(id);
 						idTestRepository.save(test);
 					});
 

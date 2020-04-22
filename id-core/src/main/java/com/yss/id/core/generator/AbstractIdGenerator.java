@@ -10,6 +10,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -50,30 +51,54 @@ public abstract class AbstractIdGenerator<T> {
 
         BaseBuffer<T> baseBuffer = getBuffer(bizTag);
 
-        String nextId = "";
-
-        synchronized (baseBuffer){
-
-            while (baseBuffer.getThreadRunning().get()){
-                waitAndSleep(baseBuffer);
+        while (true){
+            if(baseBuffer.isCurrentEmpty()){
+                loadCurrent(baseBuffer, BigDecimal.ZERO);
             }
-
-            //获取下一缓存
-            loadNextBuffer(bizTag);
-
-            nextId = baseBuffer.nextId();
-
-            //nextId 等于maxId时，切换缓存
-            if(baseBuffer.switchBufer()){
-                logger.info(" Swith buffer ...., bizTag = {}.", bizTag);
-                baseBuffer.getBuffers()[baseBuffer.getCurrentPos()] = null;
-                baseBuffer.switchPos();
-                baseBuffer.setAlreadyLoadBuffer(false);
+            //获取当前id 比对id是否能用
+            BigDecimal nextId = baseBuffer.nextId();
+            //id是否可以使用
+            if(baseBuffer.switchBufer(nextId)){
+                loadCurrent(baseBuffer, nextId);
+            }else if(baseBuffer.isInitBuffer(nextId)){
+                initBuffer(baseBuffer, nextId);
+            }else{
+                //判断是否需要获取下缓存
+                loadNextBuffer(baseBuffer, nextId);
+                return nextId.toString();
             }
         }
-        logger.info("Get id end, return nextId is {}.", nextId);
+    }
 
-        return nextId;
+    /**
+     * 重新初始化baseBuffer
+     * @param baseBuffer
+     */
+    public  void initBuffer(BaseBuffer baseBuffer, BigDecimal nextId){
+
+    }
+
+    /**
+     * 获取current buffer
+     * @param baseBuffer
+     */
+    public void loadCurrent(BaseBuffer baseBuffer, BigDecimal nextId){
+        if(baseBuffer.isCurrentEmpty()
+                || baseBuffer.switchBufer(nextId)){
+            synchronized (baseBuffer){
+                if(baseBuffer.isCurrentEmpty()
+                        || baseBuffer.switchBufer(nextId)){
+                    if(baseBuffer.getBuffers()[baseBuffer.nextPos()] == null){
+                        baseBuffer.getBuffers()[baseBuffer.getCurrentPos()] = romoteLoadNextBuffer(baseBuffer.getKey());
+                        //同步加载缓存
+                    }else {
+                        baseBuffer.getBuffers()[baseBuffer.getCurrentPos()] = null;
+                        baseBuffer.switchPos();
+                        baseBuffer.setAlreadyLoadBuffer(false);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -129,62 +154,39 @@ public abstract class AbstractIdGenerator<T> {
      *
      * @param bizTag
      */
-    protected void loadNextBuffer(String bizTag){
-        BaseBuffer baseBuffer  = baseMap.get(bizTag);
-
-        T currentBuffer = (T) baseBuffer.getCurrent();
-
-        T nextBuffer = (T) baseBuffer.getBuffers()[baseBuffer.nextPos()];
+    protected void loadNextBuffer(BaseBuffer baseBuffer, BigDecimal nextId){
 
         //是否需要获取下一缓存，维护nextReady状态
         if(!baseBuffer.isAlreadyLoadBuffer()
-                && baseBuffer.isloadNextBuffer(currentBuffer, nextBuffer)
+                && baseBuffer.isloadNextBuffer(nextId)
                 && baseBuffer.getThreadRunning().compareAndSet(false, true)){
 
+            String bizTag = baseBuffer.getKey();
+
             logger.info("load next buffer start... , bizTag={}.", bizTag);
-
-            executor.execute(()->{
+            synchronized (baseBuffer){
                 if(!baseBuffer.isAlreadyLoadBuffer()){
-                    //远程调用服务获取id集合，并添加至缓存中
-                    try {
-                        T buffer =  romoteLoadNextBuffer(bizTag);
+                    executor.execute(()->{
+                        try {
+                            T buffer =  romoteLoadNextBuffer(bizTag);
 
-                        baseBuffer.getBuffers()[baseBuffer.nextPos()] = buffer;
+                            baseBuffer.getBuffers()[baseBuffer.nextPos()] = buffer;
+                            baseBuffer.setAlreadyLoadBuffer(true);
+                            if(logger.isDebugEnabled()){
+                                logger.debug("load next buffer end ... ,bizTag={}, baseBuffer={}.", bizTag, JSON.toJSONString(baseBuffer));
+                            }else{
+                                logger.info("load next buffer end ... , bizTag={}.", bizTag);
+                            }
 
-                        baseBuffer.setAlreadyLoadBuffer(true);
-
-                        if(logger.isDebugEnabled()){
-                            logger.debug("load next buffer end ... ,bizTag={}, baseBuffer={}.", bizTag, JSON.toJSONString(baseBuffer));
-                        }else{
-                            logger.info("load next buffer end ... , bizTag={}.", bizTag);
+                        }finally {
+                            baseBuffer.getThreadRunning().set(false);
                         }
-
-                    }finally {
-                        baseBuffer.getThreadRunning().set(false);
-                    }
-
-                }else{
-                    logger.info("already load next buffer, bizTag={}.", bizTag);
+                    });
                 }
-            });
 
-        }
-
-    }
-
-    private void waitAndSleep(BaseBuffer buffer) {
-        int roll = 0;
-        while (buffer.getThreadRunning().get()) {
-            roll += 1;
-            if(roll > 10000) {
-                try {
-                    TimeUnit.MILLISECONDS.sleep(10);
-                    break;
-                } catch (InterruptedException e) {
-                    break;
-                }
             }
         }
+
     }
 
     /**

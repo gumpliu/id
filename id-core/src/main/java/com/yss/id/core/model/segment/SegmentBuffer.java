@@ -1,7 +1,5 @@
 package com.yss.id.core.model.segment;
 
-import com.alibaba.fastjson.JSON;
-import com.yss.id.core.constans.Constants;
 import com.yss.id.core.model.BaseBuffer;
 import com.yss.id.core.util.MathUtil;
 
@@ -20,39 +18,40 @@ public class SegmentBuffer extends BaseBuffer<Segment> {
 
 
     @Override
-    public String nextId() {
-
-        return String.valueOf(getCurrent().getValue().incrementAndGet());
-    }
-
-    @Override
-    public boolean switchBufer() {
-        //todo BigInteger  BigDecimal 超长计算
-        boolean isFiexdSwitch = true;
-        Segment currentBuffer = getCurrent();
-        if(maxLength > 0){
-            isFiexdSwitch = BigDecimal.valueOf(currentBuffer.getValue().get()).
-                    compareTo(BigDecimal.valueOf(MathUtil.maxValue(currentBuffer.getBuffer().getKey(), maxLength))) > 0;
+    public BigDecimal nextId() {
+        synchronized (this){
+            return BigDecimal.valueOf(getCurrent().getValue().incrementAndGet());
         }
-        return BigDecimal.valueOf(currentBuffer.getValue().get()).compareTo(BigDecimal.valueOf(currentBuffer.getMax())) >= 0 && isFiexdSwitch;
     }
 
     @Override
-    public boolean isloadNextBuffer(Segment currentBuffer, Segment nextBuffer) {
-
-        //已经获取下一缓存信息
-        if(nextBuffer != null && nextBuffer.getMax() > currentBuffer.getMax()){
+    public boolean isInitBuffer(BigDecimal nextId){
+        if(maxLength <= 0){
             return false;
         }
+        return nextId.compareTo(BigDecimal.valueOf(MathUtil.maxValue(getKey(), maxLength))) == 1;
+    }
 
-        long initValue = currentBuffer.getMax() - currentBuffer.getStep();
 
-        BigDecimal currentThreshold = BigDecimal.valueOf(currentBuffer.getValue().get())
-                .subtract(BigDecimal.valueOf(initValue))
-                .divide(BigDecimal.valueOf(currentBuffer.getStep()), 2, BigDecimal.ROUND_HALF_UP)
-                .multiply(BigDecimal.valueOf(100));
+    @Override
+    public boolean switchBufer(BigDecimal nextId) {
+        return getMaxId().compareTo(nextId) < 0;
+    }
 
-        return currentThreshold.intValue() > Constants.ID_THRESHOLDVALUE;
+    @Override
+    public boolean isCurrentEmpty() {
+        return getCurrent() == null;
+    }
+
+    @Override
+    public BigDecimal getMaxId() {
+        return BigDecimal.valueOf(getCurrent().getMax());
+    }
+
+    @Override
+    public boolean isloadNextBuffer(BigDecimal nextId) {
+
+        return nextId.compareTo(getCurrent().getLoadingValue()) > 0;
     }
 
 

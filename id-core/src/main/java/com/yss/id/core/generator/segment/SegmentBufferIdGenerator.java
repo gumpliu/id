@@ -1,5 +1,6 @@
 package com.yss.id.core.generator.segment;
 
+import com.yss.id.core.constans.Constants;
 import com.yss.id.core.exception.IdException;
 import com.yss.id.core.generator.AbstractIdGenerator;
 import com.yss.id.core.model.BaseBuffer;
@@ -64,31 +65,34 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
 
         putBizTagLen(bizTag, length);
 
-        SegmentBuffer segmentBuffer = (SegmentBuffer) getBuffer(bizTag);
-        String nextId = "";
-        synchronized (segmentBuffer){
-            nextId = nextId(bizTag);
-            //nextId超过位数最大值，segment重新初始化
-            if(BigDecimal.valueOf(Long.parseLong(nextId)).compareTo(BigDecimal.valueOf(MathUtil.maxValue(bizTag, length))) == 1 ){
-                SegmentId segmentId = idService.initSegmentId(bizTag);
-                Segment segment = new Segment(segmentBuffer);
-                segment.setMax(segmentId.getMaxId());
-                segment.setStep(segmentId.getStep());
-                AtomicLong currentId = new AtomicLong(segment.getMax() - segment.getStep());
-                segment.setValue(currentId);
+        return MathUtil.appendZero(nextId(bizTag), length);
+    }
 
-                segmentBuffer.getBuffers()[segmentBuffer.getCurrentPos()] = segment;
-                //另一缓存设置为空
-                if(segmentBuffer.getBuffers()[segmentBuffer.nextPos()] != null){
-                    segmentBuffer.getBuffers()[segmentBuffer.nextPos()] = null;
+    @Override
+    public  void initBuffer(BaseBuffer baseBuffer, BigDecimal nextId) {
+
+        if(baseBuffer.isInitBuffer(nextId)){
+            synchronized (baseBuffer){
+                if(baseBuffer.isInitBuffer(nextId)){
+                    SegmentBuffer segmentBuffer = (SegmentBuffer) baseBuffer;
+                    //nextId超过位数最大值，segment重新初始化
+                    String bizTag = segmentBuffer.getKey();
+
+                    SegmentId segmentId = idService.initSegmentId(bizTag);
+
+                    Segment segment = getSegment(segmentId, segmentBuffer);
+                    //初始segmentBuffer
+                    segmentBuffer.getBuffers()[segmentBuffer.getCurrentPos()] = segment;
+                    segmentBuffer.setAlreadyLoadBuffer(false);
+                    //另一缓存设置为空
+                    if(segmentBuffer.getBuffers()[segmentBuffer.nextPos()] != null){
+                        segmentBuffer.getBuffers()[segmentBuffer.nextPos()] = null;
+                    }
                 }
-                nextId = segmentBuffer.nextId();
             }
         }
 
 
-
-        return MathUtil.appendZero(nextId, length);
     }
 
 
@@ -100,7 +104,6 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
         SegmentBuffer segmentBuffer = new SegmentBuffer();
         segmentBuffer.setKey(bizTag);
         segmentBuffer.setMaxLength(bizTagLenMap.get(bizTag));
-
         Segment segment = getSegmentId(segmentBuffer);
 
         segmentBuffer.getBuffers()[segmentBuffer.getCurrentPos()] = segment;
@@ -135,13 +138,32 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
             segmentId = idService.getSegmentId(bizTag);
         }
 
+        return getSegment(segmentId, segmentBuffer);
+    }
+
+    private Segment getSegment(SegmentId segmentId, SegmentBuffer segmentBuffer){
+
         Segment segment = new Segment(segmentBuffer);
         segment.setMax(segmentId.getMaxId());
         segment.setStep(segmentId.getStep());
         AtomicLong currentId = new AtomicLong(segment.getMax() - segment.getStep());
         segment.setValue(currentId);
+        segment.setLoadingValue(getLoadingValue(currentId.get(), segmentId.getStep()));
 
         return segment;
+    }
+
+    /**
+     * 获取loadingValue
+     * @param currentId
+     * @param step
+     * @return
+     */
+    private BigDecimal getLoadingValue(long currentId, int step){
+
+        return BigDecimal.valueOf(step)
+               .divide(BigDecimal.valueOf(Constants.ID_THRESHOLDVALUE), 0, BigDecimal.ROUND_HALF_UP)
+               .add(BigDecimal.valueOf(currentId));
     }
 
 

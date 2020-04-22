@@ -11,17 +11,18 @@ import javax.persistence.*;
 public class TIdTest{
 
     @Id
-    private String id;
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    private Long id;
 
     @Basic
     @Column(name = "test_id")
     private String testId;
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

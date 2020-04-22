@@ -1,5 +1,6 @@
 package com.yss.id.server.domain.segment.service.impl;
 
+import com.yss.id.core.exception.IdException;
 import com.yss.id.core.model.SegmentId;
 import com.yss.id.core.util.MathUtil;
 import com.yss.id.server.config.IdServerProperties;
@@ -35,11 +36,12 @@ public class SegmentIdServiceImpl implements SegmentIdService {
      * @return
      */
     @Override
-    @Transactional
     public SegmentId getSegment(String bizTag) {
         int step = getStep();
 
+//        for (int i = 0; i < 5; i++){
         while (true){
+
             AllocEntity allocEntity = getAllocEntity(bizTag);
 
             BigInteger newMaxId = BigInteger.valueOf(step).add(allocEntity.getMaxId());
@@ -50,16 +52,18 @@ public class SegmentIdServiceImpl implements SegmentIdService {
                 return createSegmentId(allocEntity.getMaxId());
             }
         }
+//        throw new IdException("get segmentId is error!");
+
     }
 
     @Override
-    @Transactional
     public SegmentId getSegment(String bizTag, int length) {
 
         long maxValue  = MathUtil.maxValue(bizTag, length);
 
         int step = getStep();
 
+//        for (int i = 0; i < 5; i++){
         while (true){
             AllocEntity allocEntity = getAllocEntity(bizTag);
 
@@ -81,16 +85,18 @@ public class SegmentIdServiceImpl implements SegmentIdService {
             }
         }
 
+//        throw new IdException("get segmentId is error!");
 
     }
 
     @Override
-    @Transactional
     public SegmentId initSegment(String bizTag) {
 
         int step = getStep();
 
+//        for (int i = 0; i < 5; i++){
         while (true){
+
             AllocEntity allocEntity = getAllocEntity(bizTag);
 
             int updateNum = allocRepository.initSegmentByBizTag(bizTag, BigInteger.valueOf(step) , step, allocEntity.getVersion());
@@ -99,6 +105,7 @@ public class SegmentIdServiceImpl implements SegmentIdService {
                 return createSegmentId(BigInteger.ZERO);
             }
         }
+//        throw new IdException("get segmentId is error!");
     }
 
     /**

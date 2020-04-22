@@ -1,5 +1,6 @@
 package com.yss.id.core.model;
 
+import java.math.BigDecimal;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -26,23 +27,38 @@ public abstract class BaseBuffer<T> {
      * 根据当前缓存获取id
      * @return
      */
-    public abstract String nextId();
+    public abstract BigDecimal nextId();
 
     /**
      * 是否切换至下一缓存，当id消耗完后切换
      *
      * @return
      */
-    public  abstract boolean switchBufer();
+    public  abstract boolean switchBufer(BigDecimal nextId);
+
+    /**
+     * 当前buffer 是否为空
+     * @return
+     */
+    public abstract boolean isCurrentEmpty();
+
+    /**
+     * 当前buffer 最大值
+     * @return
+     */
+    public abstract BigDecimal getMaxId();
+
+    public boolean isInitBuffer(BigDecimal nextId){
+        return false;
+    }
 
     /**
      * 是否需要获取二级缓存
      *
-     * @param currentBuffer
-     * @param nextBuffer
+     * @param nextId
      * @return
      */
-    public abstract boolean isloadNextBuffer(T currentBuffer, T nextBuffer);
+    public abstract boolean isloadNextBuffer(BigDecimal nextId);
 
 
     public String getKey() {
@@ -101,15 +117,15 @@ public abstract class BaseBuffer<T> {
         this.nextReady = nextReady;
     }
 
+    public AtomicBoolean getThreadRunning() {
+        return threadRunning;
+    }
+
     public boolean isAlreadyLoadBuffer() {
         return alreadyLoadBuffer;
     }
 
     public void setAlreadyLoadBuffer(boolean alreadyLoadBuffer) {
         this.alreadyLoadBuffer = alreadyLoadBuffer;
-    }
-
-    public AtomicBoolean getThreadRunning() {
-        return threadRunning;
     }
 }
