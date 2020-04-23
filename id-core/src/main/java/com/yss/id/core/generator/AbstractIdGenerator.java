@@ -5,7 +5,6 @@ import com.yss.id.core.constans.Constants;
 import com.yss.id.core.exception.IdException;
 import com.yss.id.core.model.BaseBuffer;
 import com.yss.id.core.service.IdService;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +14,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @Description: id 生成器基础实现，统一实现双缓存
@@ -43,7 +41,6 @@ public abstract class AbstractIdGenerator<T> {
      * @return
      */
     public String nextId(String bizTag){
-        logger.info("Get id start, param bizTag = {}.", bizTag);
 
         if(StringUtils.isEmpty(bizTag)){
             throw new IdException("nextId bizTag Can not be empty ！！");
@@ -115,14 +112,7 @@ public abstract class AbstractIdGenerator<T> {
         BaseBuffer baseBuffer = baseMap.get(bizTag);
 
         if(baseBuffer == null){
-            logger.info(" Init BaseBuffer start, param bizTag = {}.", bizTag);
-
             baseBuffer = initBaseBuffer(bizTag);
-
-            if(logger.isDebugEnabled()){
-                logger.info(" Init BaseBuffer end, baseBuffer = {}.", JSON.toJSONString(baseBuffer));
-            }
-
         }
 
         return baseBuffer;
@@ -165,21 +155,16 @@ public abstract class AbstractIdGenerator<T> {
 
             String bizTag = baseBuffer.getKey();
 
-            logger.info("load next buffer start... , bizTag={}.", bizTag);
             synchronized (baseBuffer){
                 if(!baseBuffer.isAlreadyLoadBuffer()){
                     executor.execute(()->{
                         try {
                             T buffer =  romoteLoadNextBuffer(bizTag);
-
                             baseBuffer.getBuffers()[baseBuffer.nextPos()] = buffer;
                             baseBuffer.setAlreadyLoadBuffer(true);
                             if(logger.isDebugEnabled()){
                                 logger.debug("load next buffer end ... ,bizTag={}, baseBuffer={}.", bizTag, JSON.toJSONString(baseBuffer));
-                            }else{
-                                logger.info("load next buffer end ... , bizTag={}.", bizTag);
                             }
-
                         }finally {
                             baseBuffer.getThreadRunning().set(false);
                         }

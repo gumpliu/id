@@ -2,6 +2,8 @@ package com.yss.id.core.util;
 
 import com.yss.id.core.constans.IDFormatEnum;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * 生成分布式系统唯一的主键id
  * string类型
@@ -61,11 +63,11 @@ public class SnowflakeIdWorker {
     /**
      * 毫秒内计数(0-4095)
      */
-    private volatile long sequence = 0L;
+    private volatile AtomicLong sequence = new AtomicLong(0);
     /**
      * 上一次生成id的时间戳
      */
-    private long lastTimeStamp = -1L;
+    private volatile long lastTimeStamp = -1L;
 
     private IDFormatEnum format;
 
@@ -96,7 +98,7 @@ public class SnowflakeIdWorker {
      *
      * @return 8个字节的长整型
      */
-    public synchronized String genNextId() {
+    public  String genNextId() {
         long timeStamp = genTimeStamp();
         /**表示系统的时间修改了*/
         if (timeStamp < this.lastTimeStamp) {
@@ -104,13 +106,12 @@ public class SnowflakeIdWorker {
         }
         if (timeStamp == this.lastTimeStamp) {
             /**查看序列是否溢出*/
-            this.sequence = (this.sequence + 1) & format.getMaxSequence();
-            if (this.sequence == 0) {
+            if ((sequence.incrementAndGet() & format.getMaxSequence()) == 0) {
                 /**当出现溢出的时候，阻塞到下一个毫秒*/
                 timeStamp = this.toNextMillis(this.lastTimeStamp);
             }
         } else {  /**此时表示时间戳跟最后的时间戳不一致,需要重置序列*/
-            this.sequence = 0L;
+            this.sequence.set(0);
         }
         this.lastTimeStamp = timeStamp;
 
@@ -124,7 +125,7 @@ public class SnowflakeIdWorker {
             return String.valueOf (((lastTimeStamp - startTime) << timestampLeftShift)
                     | (dataId << dataShiftBits)
                     | (worderId << sequenceBits)
-                    | sequence);
+                    | sequence.get());
         }
 
         String date = DateUtil.dateToString(lastTimeStamp, format.getFormat());
@@ -152,6 +153,7 @@ public class SnowflakeIdWorker {
     private long toNextMillis(long lastTimeStamp) {
         long timeStamp = this.genTimeStamp();
         while (timeStamp <= lastTimeStamp) {
+            System.out.println("========");
             timeStamp = this.genTimeStamp();
         }
         return timeStamp;
@@ -159,11 +161,15 @@ public class SnowflakeIdWorker {
 
     //--------------------------test--------------------------------------
     public static void main(String[] args) {
-        SnowflakeIdWorker worker = new SnowflakeIdWorker(IDFormatEnum.ID_FORMAT_NORMAL);
+        SnowflakeIdWorker worker = new SnowflakeIdWorker(IDFormatEnum.ID_FORMAT_SHOT_YEAR_SECOND);
         /**第一次使用的时候希望初始化*/
         worker.init(30, 30);
-        for (int i = 0; i < 1; i++) {
+        long startTime = System.currentTimeMillis();
+        for (int i = 0; i < 100000; i++) {
+            worker.genNextId();
         }
 
+        long time = System.currentTimeMillis() -startTime;
+        System.out.println("====time=" + time);
     }
 }

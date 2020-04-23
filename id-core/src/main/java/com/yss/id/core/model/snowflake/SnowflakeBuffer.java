@@ -4,7 +4,6 @@ import com.yss.id.core.constans.IDFormatEnum;
 import com.yss.id.core.model.BaseBuffer;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 
 /**
  * @Description: 雪花模式返回结构
@@ -45,9 +44,9 @@ public class SnowflakeBuffer extends BaseBuffer<Snowflake> {
 
     @Override
     public boolean isloadNextBuffer(String nextId) {
-
         return getCurrent().getQueue().size() <= loadingValue;
     }
+
 
     public IDFormatEnum getFormat() {
         return format;

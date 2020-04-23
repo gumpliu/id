@@ -11,7 +11,6 @@ public abstract class BaseBuffer<T> {
     protected T[] buffers;
     private volatile int currentPos; //当前的使用的segment的index
     private volatile int step;
-    private volatile int minStep;
     private volatile boolean nextReady; //下一个segment是否处于可切换状态
     private volatile boolean alreadyLoadBuffer; //是否已经换成另一缓存
     private final AtomicBoolean threadRunning;
@@ -89,14 +88,6 @@ public abstract class BaseBuffer<T> {
         this.step = step;
     }
 
-    public int getMinStep() {
-        return minStep;
-    }
-
-    public void setMinStep(int minStep) {
-        this.minStep = minStep;
-    }
-
     public T[] getBuffers() {
         return buffers;
     }
@@ -129,7 +120,4 @@ public abstract class BaseBuffer<T> {
         this.alreadyLoadBuffer = alreadyLoadBuffer;
     }
 
-    public BigDecimal strToDecimal(String value){
-      return new BigDecimal(value);
-    }
 }

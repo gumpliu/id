@@ -28,6 +28,10 @@ public class HttpIdServiceImpl implements IdService {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpIdServiceImpl.class);
 
+    private static int readTimeout = 60000;
+
+    private static int connectTimeout = 60000;
+
     @Autowired
     private IdClientConfig clientConfig;
 
@@ -71,7 +75,7 @@ public class HttpIdServiceImpl implements IdService {
     private SegmentId romoteLoadSegment(String url){
 
         logger.info("romote load segment start, url={}", url);
-        String response = HttpUtils.post(url,5000, 5000);
+        String response = HttpUtils.post(url,readTimeout, connectTimeout);
         logger.info("romote load segment end, response={}", response);
         if (response == null || "".equals(response.trim())) {
             logger.error("romote load next segment error，id-server exception or segment enable is false");
@@ -89,9 +93,7 @@ public class HttpIdServiceImpl implements IdService {
      * @return
      */
     private SnowflakeId romoteLoadSnowflake(String url){
-        logger.info("romote load snowflake start, url={}", url);
-        String response = HttpUtils.post(url,5000, 5000);
-        logger.info(" romote load snowflake end, response={}",  response);
+        String response = HttpUtils.post(url, readTimeout, connectTimeout);
         if (response == null || "".equals(response.trim())) {
             logger.error("romote load next snowflake error，id-server exception or snowflake enable is false!");
             return null;

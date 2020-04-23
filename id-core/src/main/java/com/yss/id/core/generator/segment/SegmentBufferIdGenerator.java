@@ -9,7 +9,6 @@ import com.yss.id.core.model.segment.Segment;
 import com.yss.id.core.model.segment.SegmentBuffer;
 import com.yss.id.core.service.IdService;
 import com.yss.id.core.util.MathUtil;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,7 +97,6 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
 
     @Override
     public BaseBuffer createBaseBuffer(String bizTag) {
-        logger.info("segment create SegmentBuffer, bizTag={}", bizTag);
 
         //远程调用服务获取segment
         SegmentBuffer segmentBuffer = new SegmentBuffer();
@@ -113,7 +111,6 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
 
     @Override
     protected Segment romoteLoadNextBuffer(String bizTag) {
-        logger.info("segment romote load next buffer, bizTag={}", bizTag);
 
         //远程调用服务获取segment
         SegmentBuffer segmentBuffer = (SegmentBuffer) baseMap.get(bizTag);
@@ -148,7 +145,7 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
         segment.setStep(segmentId.getStep());
         AtomicLong currentId = new AtomicLong(segment.getMax() - segment.getStep());
         segment.setValue(currentId);
-        segment.setLoadingValue(getLoadingValue(currentId.get(), segmentId.getStep()));
+        segment.setLoadingValue(getLoadingValue(currentId.get(), segmentId.getStep()).longValue());
 
         return segment;
     }

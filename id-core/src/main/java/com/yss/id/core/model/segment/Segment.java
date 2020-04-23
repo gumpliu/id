@@ -2,7 +2,6 @@ package com.yss.id.core.model.segment;
 
 import com.yss.id.core.model.BaseBuffer;
 
-import java.math.BigDecimal;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -13,7 +12,7 @@ public class Segment {
     private volatile long max;
     private volatile int step;
     private SegmentBuffer buffer;
-    private volatile BigDecimal loadingValue; //大于等于loadingValue值时，load next buffer
+    private volatile long loadingValue; //大于等于loadingValue值时，load next buffer
 
     public Segment(SegmentBuffer buffer) {
         this.buffer = buffer;
@@ -51,11 +50,11 @@ public class Segment {
         return this.getMax() - getValue().get();
     }
 
-    public BigDecimal getLoadingValue() {
+    public long getLoadingValue() {
         return loadingValue;
     }
 
-    public void setLoadingValue(BigDecimal loadingValue) {
+    public void setLoadingValue(long loadingValue) {
         this.loadingValue = loadingValue;
     }
 }
