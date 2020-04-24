@@ -24,8 +24,9 @@ public class SnowflakeIdWorkerFactory {
         if(!snowflakeIdWorkers.containsKey(format)){
             synchronized (SnowflakeIdWorkerFactory.class){
                 if(!snowflakeIdWorkers.containsKey(format)){
-                    SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker(format);
                     IdServerProperties idServerProperties = BeanUtil.getBean(IdServerProperties.class);
+
+                    SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker(format, idServerProperties.getSnowflake().getStep());
                     int workerId = idServerProperties.getSnowflake().getWorkerId();
                     snowflakeIdWorker.init(workerId,workerId);
 

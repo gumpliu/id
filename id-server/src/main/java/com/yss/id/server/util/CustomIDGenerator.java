@@ -13,7 +13,7 @@ public class CustomIDGenerator extends IdentityGenerator {
 
     @Override
     public Serializable generate(SharedSessionContractImplementor session, Object obj) throws HibernateException {
-        Object id = SnowflakeIdWorkerFactory.getInstance(IDFormatEnum.ID_FORMAT_SHOT_YEAR_SECOND).genNextId();
+        Object id = SnowflakeIdWorkerFactory.getInstance(IDFormatEnum.ID_FORMAT_SHOT_YEAR_SECOND).nextId();
         return (Serializable) id;
     }
 

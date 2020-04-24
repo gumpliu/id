@@ -52,7 +52,7 @@ public class ResponseAdvisor implements ResponseBodyAdvice<Object> {
 			rootNode.put("startTime", context.getParameter("startTime"));
 			rootNode.put("endTime", endTime);
 			rootNode.put("time",  endTime - Long.parseLong(context.getParameter("startTime")));
-			rootNode.put("response", JSON.toJSONString(body));
+//			rootNode.put("response", JSON.toJSONString(body));
 
 			logger.info(rootNode.toString());
 		}catch (Exception e){
