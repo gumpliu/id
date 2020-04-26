@@ -1,7 +1,9 @@
 package com.yss.id.core.util;
 
 import com.yss.id.core.constans.IDFormatEnum;
+import org.apache.commons.lang.StringUtils;
 
+import java.text.DateFormat;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -75,8 +77,6 @@ public class SnowflakeIdWorker {
      */
     private long dataId;
 
-    private Timer timer = new Timer();
-
     /**
      * 毫秒内计数(0-4095)
      */
@@ -90,29 +90,28 @@ public class SnowflakeIdWorker {
 
     private volatile String currentTime;
 
-
     public SnowflakeIdWorker(IDFormatEnum format, int casheSize){
         this.format = format;
         this.casheSize = casheSize;
         cache = new ArrayBlockingQueue<String>(casheSize * 2);
-
-        if(format == IDFormatEnum.ID_FORMAT_MILLISECOND
-                || format == IDFormatEnum.ID_FORMAT_SHOT_YEAR_MILLISECOND){
-
-            timer.schedule(new TimerTask() {
-                public void run() {
-                    currentTime = DateUtil.dateToString(System.currentTimeMillis(), format.getFormat());
-                }
-            }, 0 , 1);
-
-        }else if(format == IDFormatEnum.ID_FORMAT_SHOT_YEAR_SECOND
-                || format == IDFormatEnum.ID_FORMAT_SECOND){
-            timer.schedule(new TimerTask() {
-                public void run() {
-                    currentTime = DateUtil.dateToString(System.currentTimeMillis(), format.getFormat());
-                }
-            }, 0 , 1000);
-        }
+//
+//        if(format == IDFormatEnum.ID_FORMAT_MILLISECOND
+//                || format == IDFormatEnum.ID_FORMAT_SHOT_YEAR_MILLISECOND){
+//
+//            timer.schedule(new TimerTask() {
+//                public void run() {
+//                    currentTime = DateUtil.dateToString(System.currentTimeMillis(), format.getFormat());
+//                }
+//            }, 0 , 1);
+//
+//        }else if(format == IDFormatEnum.ID_FORMAT_SHOT_YEAR_SECOND
+//                || format == IDFormatEnum.ID_FORMAT_SECOND){
+//            timer.schedule(new TimerTask() {
+//                public void run() {
+//                    currentTime = DateUtil.dateToString(System.currentTimeMillis(), format.getFormat());
+//                }
+//            }, 0 , 1000);
+//        }
 
     }
 
@@ -133,7 +132,7 @@ public class SnowflakeIdWorker {
         this.dataId = dataId;
     }
 
-    public  String nextId(){
+    public synchronized String nextId(){
         while (true){
             String id = cache.poll();
 
@@ -200,7 +199,10 @@ public class SnowflakeIdWorker {
                     | sequence.get());
         }
 
-        return currentTime + worderId +  MathUtil.appendZero(String.valueOf(sequence), format.getLength());
+
+        String dateTime  = DateUtil.dateToString(System.currentTimeMillis(), format.getFormat());
+
+        return dateTime + worderId +  MathUtil.appendZero(String.valueOf(sequence), format.getLength());
 
     }
 
@@ -236,16 +238,56 @@ public class SnowflakeIdWorker {
 
         return timeStamp;
     }
+//
+//    private static class DateFormatTimer{
+//
+//        private static String ID_FORMAT_SHOT_YEAR_SECOND;
+//
+//        private static String ID_FORMAT_SECOND;
+//
+//        private static String ID_FORMAT_SHOT_YEAR_MILLISECOND;
+//
+//        private static String ID_FORMAT_MILLISECOND;
+//
+//
+//        static {
+//            Timer timer = new Timer();
+//
+//                timer.schedule(new TimerTask() {
+//                    public void run() {
+//                        ID_FORMAT_SHOT_YEAR_MILLISECOND = DateUtil.dateToString(System.currentTimeMillis(), IDFormatEnum.ID_FORMAT_SHOT_YEAR_MILLISECOND.getFormat());
+//
+//                        ID_FORMAT_MILLISECOND = DateUtil.dateToString(System.currentTimeMillis(), IDFormatEnum.ID_FORMAT_MILLISECOND.getFormat());
+//
+//                    }
+//                }, 0 , 1);
+//
+//            timer.schedule(new TimerTask() {
+//                public void run() {
+//                    ID_FORMAT_SHOT_YEAR_SECOND = DateUtil.dateToString(System.currentTimeMillis(), IDFormatEnum.ID_FORMAT_SHOT_YEAR_SECOND.getFormat());
+//
+//                    ID_FORMAT_SECOND = DateUtil.dateToString(System.currentTimeMillis(), IDFormatEnum.ID_FORMAT_SECOND.getFormat());
+//                }
+//            }, 0 , 1000);
+//
+//        }
+//
+//        public static String getDateFormat(IDFormatEnum idFormatEnum){
+//
+//            if (ID_FORMAT_MILLISECOND.)
+//
+//        }
+//
+//    }
 
     //--------------------------test--------------------------------------
     public static void main(String[] args) {
-        SnowflakeIdWorker worker = new SnowflakeIdWorker(IDFormatEnum.ID_FORMAT_SHOT_YEAR_SECOND, 10000);
+        SnowflakeIdWorker worker = new SnowflakeIdWorker(IDFormatEnum.ID_FORMAT_SHOT_YEAR_MILLISECOND, 10000);
         /**第一次使用的时候希望初始化*/
         worker.init(30, 30);
         long startTime = System.currentTimeMillis();
-        for (int i = 0; i < 1000000; i++) {
-            worker.nextId();
-//            System.out.println(worker.nextId());
+        for (int i = 0; i < 10000; i++) {
+            System.out.println(worker.nextId());
         }
 
         long time = System.currentTimeMillis() -startTime;
