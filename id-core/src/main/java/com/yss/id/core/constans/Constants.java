@@ -16,7 +16,6 @@ public class Constants {
 
     public static final String SWONFLAKE_URL = "{0}/id/snowflake/{1}";
 
-    public static final int THREAD_CORE = 1;
-
+    public static final int THREAD_CORE = 2;
 
 }

@@ -73,7 +73,7 @@ public class SnowflakeCheckTime {
         }else if(driverClassName.contains("db2")){
             return "select sysdate from dual";
         }else{
-            throw new IdException("DB ONLY USE MYSQL OR ORACLE !");
+            throw new IdException("DB ONLY USE MYSQL、ORACLE、SQLSERVER、DB2!");
         }
     }
 }

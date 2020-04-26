@@ -74,9 +74,8 @@ public class HttpIdServiceImpl implements IdService {
      */
     private SegmentId romoteLoadSegment(String url){
 
-        logger.info("romote load segment start, url={}", url);
         String response = HttpUtils.post(url,readTimeout, connectTimeout);
-        logger.info("romote load segment end, response={}", response);
+
         if (response == null || "".equals(response.trim())) {
             logger.error("romote load next segment error，id-server exception or segment enable is false");
             return null;

@@ -160,8 +160,12 @@ public abstract class AbstractIdGenerator<T> {
                     executor.execute(()->{
                         try {
                             T buffer =  romoteLoadNextBuffer(bizTag);
-                            baseBuffer.getBuffers()[baseBuffer.nextPos()] = buffer;
-                            baseBuffer.setAlreadyLoadBuffer(true);
+                            if(buffer != null){
+                                baseBuffer.getBuffers()[baseBuffer.nextPos()] = buffer;
+                                baseBuffer.setAlreadyLoadBuffer(true);
+                            }else{
+                                logger.error("load next buffer error, buffer is null!!");
+                            }
                             if(logger.isDebugEnabled()){
                                 logger.debug("load next buffer end ... ,bizTag={}, baseBuffer={}.", bizTag, JSON.toJSONString(baseBuffer));
                             }
