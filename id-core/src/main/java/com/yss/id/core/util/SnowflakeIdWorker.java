@@ -132,7 +132,7 @@ public class SnowflakeIdWorker {
         this.dataId = dataId;
     }
 
-    public synchronized String nextId(){
+    public String nextId(){
         while (true){
             String id = cache.poll();
 
@@ -166,7 +166,7 @@ public class SnowflakeIdWorker {
      *
      * @return 8个字节的长整型
      */
-    private  String genNextId() {
+    private synchronized String genNextId() {
 
         long timeStamp = genTimeStamp();
         /**表示系统的时间修改了*/
