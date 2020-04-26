@@ -2,6 +2,7 @@ package com.yss.id.core.model.snowflake;
 
 import com.yss.id.core.constans.IDFormatEnum;
 import com.yss.id.core.model.BaseBuffer;
+import org.apache.commons.lang.StringUtils;
 
 import java.math.BigDecimal;
 
@@ -23,22 +24,22 @@ public class SnowflakeBuffer extends BaseBuffer<Snowflake> {
 
     @Override
     public synchronized String nextId() {
-        if(switchBufer("")){
+        if(isCurrentEmpty()){
             return "";
         }
         return getCurrent().getQueue().remove();
     }
 
     @Override
-    public synchronized boolean switchBufer(String nextId) {
-        return getCurrent() == null
-                || getCurrent().getQueue() == null
-                || getCurrent().getQueue().isEmpty();
+    public boolean switchBufer(String nextId) {
+        return StringUtils.isEmpty(nextId) || isCurrentEmpty();
     }
 
     @Override
-    public boolean isCurrentEmpty() {
-        return false;
+    public synchronized boolean isCurrentEmpty() {
+        return getCurrent() == null
+                || getCurrent().getQueue() == null
+                || getCurrent().getQueue().isEmpty();
     }
 
 
