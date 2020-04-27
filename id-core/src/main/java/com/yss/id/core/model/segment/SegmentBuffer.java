@@ -18,14 +18,8 @@ public class SegmentBuffer extends BaseBuffer<Segment> {
 
 
     @Override
-    public String nextId() {
-        if(maxLength > 0){
-            synchronized (this){
-                return getCurrent().getValue().incrementAndGet() + "";
-            }
-        }else {
-            return getCurrent().getValue().incrementAndGet() + "";
-        }
+    public synchronized String nextId() {
+        return getCurrent().getValue().incrementAndGet() + "";
     }
 
     @Override
@@ -48,7 +42,10 @@ public class SegmentBuffer extends BaseBuffer<Segment> {
     }
 
     @Override
-    public BigDecimal getMaxId() {
+    public synchronized BigDecimal getMaxId() {
+        if(getCurrent() == null){
+            return BigDecimal.ZERO;
+        }
         return BigDecimal.valueOf(getCurrent().getMax());
     }
 

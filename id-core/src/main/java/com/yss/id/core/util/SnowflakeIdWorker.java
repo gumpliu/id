@@ -1,15 +1,10 @@
 package com.yss.id.core.util;
 
 import com.yss.id.core.constans.IDFormatEnum;
-import org.apache.commons.lang.StringUtils;
 
-import java.text.DateFormat;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -24,10 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class SnowflakeIdWorker {
 
-    private ExecutorService executorService  = Executors.newSingleThreadExecutor();
-
-
-    private static ArrayBlockingQueue<String> cache;
+    private ArrayBlockingQueue<String> cache;
 
     private int casheSize;
 
@@ -88,31 +80,10 @@ public class SnowflakeIdWorker {
 
     private IDFormatEnum format;
 
-    private volatile String currentTime;
-
     public SnowflakeIdWorker(IDFormatEnum format, int casheSize){
         this.format = format;
         this.casheSize = casheSize;
-        cache = new ArrayBlockingQueue<String>(casheSize * 2);
-//
-//        if(format == IDFormatEnum.ID_FORMAT_MILLISECOND
-//                || format == IDFormatEnum.ID_FORMAT_SHOT_YEAR_MILLISECOND){
-//
-//            timer.schedule(new TimerTask() {
-//                public void run() {
-//                    currentTime = DateUtil.dateToString(System.currentTimeMillis(), format.getFormat());
-//                }
-//            }, 0 , 1);
-//
-//        }else if(format == IDFormatEnum.ID_FORMAT_SHOT_YEAR_SECOND
-//                || format == IDFormatEnum.ID_FORMAT_SECOND){
-//            timer.schedule(new TimerTask() {
-//                public void run() {
-//                    currentTime = DateUtil.dateToString(System.currentTimeMillis(), format.getFormat());
-//                }
-//            }, 0 , 1000);
-//        }
-
+        cache = new ArrayBlockingQueue<String>(casheSize);
     }
 
     /**
@@ -133,24 +104,19 @@ public class SnowflakeIdWorker {
     }
 
     public String nextId(){
-        while (true){
-            String id = cache.poll();
-
-            if(id == null) {
-                cache.clear();
-                batchCache(casheSize * 2);
-            }else {
-                if(cache.size() < casheSize){
-                    executorService.execute(()-> batchCache(casheSize));
-                }
-                return id;
-
+        synchronized (this){
+            while (true){
+                String id = cache.poll();
+                if(id != null) { return id; }
+                batchCache(casheSize);
             }
         }
     }
 
 
     private void batchCache(int size) {
+
+        cache.clear();
 
         for (int i = 0; i < size; i++) {
             if (!cache.offer(genNextId())) {
@@ -166,25 +132,31 @@ public class SnowflakeIdWorker {
      *
      * @return 8个字节的长整型
      */
-    private synchronized String genNextId() {
+    private String genNextId() {
 
         long timeStamp = genTimeStamp();
+
+        long compareTimeStamp = compareTime(timeStamp);
+
+        long compareLastTimeStamp = compareTime(this.lastTimeStamp);
+
         /**表示系统的时间修改了*/
-        if (timeStamp < this.lastTimeStamp) {
+        if (compareTimeStamp < compareLastTimeStamp) {
             throw new RuntimeException(String.format("System clock moved;currentTimeStamp %d,lastTimeStamp = %d", timeStamp, this.lastTimeStamp));
         }
 
-        if (timeStamp == this.lastTimeStamp) {
+        if (compareTimeStamp == compareLastTimeStamp) {
             /**查看序列是否溢出*/
 
             if (sequence.incrementAndGet() >= format.getMaxSequence()) {
-                /**当出现溢出的时候，阻塞到下一个毫秒*/
-                timeStamp = this.toNextMillis(this.lastTimeStamp);
+                /**当出现溢出的时候，阻塞到下一个毫秒或秒*/
+                this.toNextTime(compareLastTimeStamp);
             }
+
         } else {  /**此时表示时间戳跟最后的时间戳不一致,需要重置序列*/
             this.sequence.set(0);
         }
-        this.lastTimeStamp = timeStamp;
+        this.lastTimeStamp = genTimeStamp();
 
         return getId();
     }
@@ -199,11 +171,26 @@ public class SnowflakeIdWorker {
                     | sequence.get());
         }
 
+        //使用currentTime时重复，因为lastTimeStamp与currentTime 时间可能不同步
+        //不能使用System.currentTimeMillis()，可能与下一秒或毫秒id重复，只能使用lastTimeStamp，秒 * 1000
+        String dateTime  = DateUtil.dateToString(lastTimeStamp, format.getFormat());
+        String id = dateTime + worderId +  MathUtil.appendZero(String.valueOf(sequence), format.getLength());
+        return id;
 
-        String dateTime  = DateUtil.dateToString(System.currentTimeMillis(), format.getFormat());
+    }
 
-        return dateTime + worderId +  MathUtil.appendZero(String.valueOf(sequence), format.getLength());
+    /**
+     * 获取时间比较时间，秒 除以1000
+     * @param time
+     * @return
+     */
+    private long compareTime(long time){
+        if(format == IDFormatEnum.ID_FORMAT_SECOND
+            || format == IDFormatEnum.ID_FORMAT_SHOT_YEAR_SECOND){
+            return time / 1000;
+        }
 
+        return time;
     }
 
     /**
@@ -213,13 +200,6 @@ public class SnowflakeIdWorker {
      * @return
      */
     private long genTimeStamp() {
-
-        if(format == IDFormatEnum.ID_FORMAT_SHOT_YEAR_SECOND
-                || format == IDFormatEnum.ID_FORMAT_SECOND){
-
-            return System.currentTimeMillis() / 1000;
-        }
-
         return System.currentTimeMillis();
     }
 
@@ -229,85 +209,133 @@ public class SnowflakeIdWorker {
      * @param lastTimeStamp 上传生成id的时间戳
      * @return
      */
-    private long toNextMillis(long lastTimeStamp) {
-        long timeStamp = this.genTimeStamp();
+    private void toNextTime(long lastTimeStamp) {
+        long timeStamp = compareTime(genTimeStamp());
+
         while (timeStamp <= lastTimeStamp) {
-            timeStamp = this.genTimeStamp();
+            timeStamp = compareTime(genTimeStamp());
         }
         this.sequence.set(0L);
-
-        return timeStamp;
     }
-//
-//    private static class DateFormatTimer{
-//
-//        private static String ID_FORMAT_SHOT_YEAR_SECOND;
-//
-//        private static String ID_FORMAT_SECOND;
-//
-//        private static String ID_FORMAT_SHOT_YEAR_MILLISECOND;
-//
-//        private static String ID_FORMAT_MILLISECOND;
-//
-//
-//        static {
-//            Timer timer = new Timer();
-//
-//                timer.schedule(new TimerTask() {
-//                    public void run() {
-//                        ID_FORMAT_SHOT_YEAR_MILLISECOND = DateUtil.dateToString(System.currentTimeMillis(), IDFormatEnum.ID_FORMAT_SHOT_YEAR_MILLISECOND.getFormat());
-//
-//                        ID_FORMAT_MILLISECOND = DateUtil.dateToString(System.currentTimeMillis(), IDFormatEnum.ID_FORMAT_MILLISECOND.getFormat());
-//
-//                    }
-//                }, 0 , 1);
-//
-//            timer.schedule(new TimerTask() {
-//                public void run() {
-//                    ID_FORMAT_SHOT_YEAR_SECOND = DateUtil.dateToString(System.currentTimeMillis(), IDFormatEnum.ID_FORMAT_SHOT_YEAR_SECOND.getFormat());
-//
-//                    ID_FORMAT_SECOND = DateUtil.dateToString(System.currentTimeMillis(), IDFormatEnum.ID_FORMAT_SECOND.getFormat());
-//                }
-//            }, 0 , 1000);
-//
-//        }
-//
-//        public static String getDateFormat(IDFormatEnum idFormatEnum){
-//
-//            if (ID_FORMAT_MILLISECOND.)
-//
-//        }
-//
-//    }
 
+
+//    public static String getDateFormat(IDFormatEnum idFormatEnum){
+//
+//        switch (idFormatEnum){
+//            case ID_FORMAT_SHOT_YEAR_SECOND:
+//                return ID_FORMAT_SHOT_YEAR_SECOND;
+//            case ID_FORMAT_SECOND:
+//                return ID_FORMAT_SECOND;
+//            case ID_FORMAT_SHOT_YEAR_MILLISECOND:
+//                return ID_FORMAT_SHOT_YEAR_MILLISECOND;
+//            case ID_FORMAT_MILLISECOND:
+//                return ID_FORMAT_MILLISECOND;
+//        }
+//        return "";
+//    }
     //--------------------------test--------------------------------------
     public static void main(String[] args) {
-        SnowflakeIdWorker worker = new SnowflakeIdWorker(IDFormatEnum.ID_FORMAT_SHOT_YEAR_MILLISECOND, 10000);
-        /**第一次使用的时候希望初始化*/
-        worker.init(30, 30);
-        long startTime = System.currentTimeMillis();
-        for (int i = 0; i < 10000; i++) {
-            System.out.println(worker.nextId());
+
+        SnowflakeIdWorker worker = new SnowflakeIdWorker(IDFormatEnum.ID_FORMAT_SHOT_YEAR_MILLISECOND, 1000);
+        worker.init(30,30);
+        final Hashtable<String, String> ids = new Hashtable<String, String>();
+
+        final int idMax = 50000;
+        final CountDownLatch cntdown = new CountDownLatch(4);
+        List<String> idc = new ArrayList<>();
+
+        long startTime=System.currentTimeMillis();   //获取开始时间
+        Thread t1 = new Thread(new Runnable() {
+
+            public void run() {
+
+                for (int i = 0; i < idMax; i++) {
+                    String id = worker.nextId();
+                    if(ids.containsKey(id)){
+                        idc.add(id);
+                    }
+                    ids.put(id, i + "");
+                }
+                System.out.println("ok1");
+                cntdown.countDown();
+            }
+        });
+
+        Thread t2 = new Thread(new Runnable() {
+
+            public void run() {
+
+                for (int i = 0; i < idMax; i++) {
+                    String id = worker.nextId();
+                    if(ids.containsKey(id)){
+                        idc.add(id);
+                    }
+                    ids.put(id, i + "");
+                }
+                System.out.println("ok2");
+                cntdown.countDown();
+            }
+        });
+
+        Thread t3 = new Thread(new Runnable() {
+
+            public void run() {
+
+                for (int i = 0; i < idMax; i++) {
+                    String id = worker.nextId();
+                    if(ids.containsKey(id)){
+                        idc.add(id);
+                    }
+                    ids.put(id, i + "");
+                }
+                System.out.println("ok3");
+                cntdown.countDown();
+            }
+        });
+        Thread t4 = new Thread(new Runnable() {
+
+            public void run() {
+
+                for (int i = 0; i < idMax; i++) {
+                    String id = worker.nextId();
+                    if(ids.containsKey(id)){
+                        idc.add(id);
+                    }
+                    ids.put(id, i + "");
+                }
+                System.out.println("ok4");
+                cntdown.countDown();
+            }
+        });
+
+        t1.start();
+        t2.start();
+        t3.start();
+        t4.start();
+        int i = 0;
+
+        System.out.println("检查id是否重复....");
+        try {
+            cntdown.await();
+        } catch (InterruptedException e1) {
+            e1.printStackTrace();
         }
 
-        long time = System.currentTimeMillis() -startTime;
-//        final long maxSequence = -1 ^ (-1 << 12L);
-//
-//        int dd = -1 << maxSequence;
-//
-//        int dd1 = -1 ^ (-1 << 12L);
-//
-//        int cc = 8 & 7;
-//
-//        System.out.println("====time=" + dd);
-//
-//        System.out.println("====time=" + dd1);
+        if (ids.size() < 4 * idMax) {
+            System.err.println("id生成重复");
+        } else {
+            System.out.println("无重复id， size＝" + ids.size());
+        }
+        System.out.println("重复id， size＝" + idc.toString());
 
-        System.out.println("====time=" + time);
 
-//        int i = 11 & 10;
-//        System.out.println("====time=" + i);
+
+        long endTime=System.currentTimeMillis(); //获取结束时间
+
+        System.out.println("程序运行时间： "+(endTime-startTime)+"ms");
+
 
 
     }
+
 }
