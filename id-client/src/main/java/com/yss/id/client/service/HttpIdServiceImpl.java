@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.yss.id.client.config.IdClientConfig;
 import com.yss.id.core.constans.Constants;
 import com.yss.id.core.constans.IDFormatEnum;
+import com.yss.id.core.exception.IdException;
 import com.yss.id.core.model.SegmentId;
 import com.yss.id.core.model.SnowflakeId;
 import com.yss.id.core.service.IdService;
@@ -78,7 +79,7 @@ public class HttpIdServiceImpl implements IdService {
 
         if (response == null || "".equals(response.trim())) {
             logger.error("romote load next segment error，id-server exception or segment enable is false");
-            return null;
+            throw new IdException("romote load next segment error response is null! ");
         }
         SegmentId segmentId  = JSON.parseObject(response, SegmentId.class);
 

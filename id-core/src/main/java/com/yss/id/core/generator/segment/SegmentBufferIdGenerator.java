@@ -76,16 +76,19 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
                     SegmentBuffer segmentBuffer = (SegmentBuffer) baseBuffer;
                     //nextId超过位数最大值，segment重新初始化
                     String bizTag = segmentBuffer.getKey();
+                    try{
+                        SegmentId segmentId = idService.initSegmentId(bizTag);
 
-                    SegmentId segmentId = idService.initSegmentId(bizTag);
-
-                    Segment segment = getSegment(segmentId, segmentBuffer);
-                    //初始segmentBuffer
-                    segmentBuffer.getBuffers()[segmentBuffer.getCurrentPos()] = segment;
-                    segmentBuffer.setAlreadyLoadBuffer(false);
-                    //另一缓存设置为空
-                    if(segmentBuffer.getBuffers()[segmentBuffer.nextPos()] != null){
-                        segmentBuffer.getBuffers()[segmentBuffer.nextPos()] = null;
+                        Segment segment = getSegment(segmentId, segmentBuffer);
+                        //初始segmentBuffer
+                        segmentBuffer.getBuffers()[segmentBuffer.getCurrentPos()] = segment;
+                        segmentBuffer.setAlreadyLoadBuffer(false);
+                        //另一缓存设置为空
+                        if(segmentBuffer.getBuffers()[segmentBuffer.nextPos()] != null){
+                            segmentBuffer.getBuffers()[segmentBuffer.nextPos()] = null;
+                        }
+                    }catch (Exception e){
+                        throw  new IdException("SegmentBuffer init buffer error!");
                     }
                 }
             }

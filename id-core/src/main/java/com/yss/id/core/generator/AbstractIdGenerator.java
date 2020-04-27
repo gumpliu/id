@@ -132,8 +132,11 @@ public abstract class AbstractIdGenerator<T> {
                 if(baseMap.get(bizTag) != null){
                     return baseMap.get(bizTag);
                 }
-                baseBuffer =  createBaseBuffer(bizTag);
-
+                try{
+                    baseBuffer =  createBaseBuffer(bizTag);
+                }catch (Exception e){
+                    throw new IdException("base buffer init error!");
+                }
                 baseMap.put(bizTag, baseBuffer);
             }
         }
@@ -160,15 +163,16 @@ public abstract class AbstractIdGenerator<T> {
                     executor.execute(()->{
                         try {
                             T buffer =  romoteLoadNextBuffer(bizTag);
-                            if(buffer != null){
-                                baseBuffer.getBuffers()[baseBuffer.nextPos()] = buffer;
-                                baseBuffer.setAlreadyLoadBuffer(true);
-                            }else{
-                                logger.error("load next buffer error, buffer is null!!");
-                            }
+
+                            baseBuffer.getBuffers()[baseBuffer.nextPos()] = buffer;
+                            baseBuffer.setAlreadyLoadBuffer(true);
+
                             if(logger.isDebugEnabled()){
                                 logger.debug("load next buffer end ... ,bizTag={}, baseBuffer={}.", bizTag, JSON.toJSONString(baseBuffer));
                             }
+                        }catch (Exception e){
+                            logger.error("load next buffer error, buffer is null!!");
+
                         }finally {
                             baseBuffer.getThreadRunning().set(false);
                         }
