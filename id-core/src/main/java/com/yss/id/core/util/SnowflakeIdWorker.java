@@ -34,32 +34,24 @@ public class SnowflakeIdWorker {
     /**
      * 机器id所占的位数
      */
-    private final long workIdBits = 5L;
-    /**
-     * 数据id所占的位数
-     */
-    private final long dataIdBits = 5L;
+    private final long workIdBits = 10L;
+
+
     /**
      * 二进制中，负数采用其绝对值的值得补码得到
      * long型的-1 的值就32个1
      */
     private final long maxWorkerId = -1L ^ (-1L << workIdBits);
-    /**
-     * 同上
-     */
-    private final long maxDataGenID = -1L ^ (-1L << dataIdBits);
+
     /**
      * 12位的序列，表示1个毫秒内可生成 2的12次幂个数据，即4096个数据
      */
     private final long sequenceBits = 12L;
-    /**
-     * 数据id存放的位置应该是向左移动12位序列值和机器码
-     */
-    private final long dataShiftBits = sequenceBits + workIdBits;
+
     /**
      * 时间戳存放的位置应该是从22位开始的，左移22位
      */
-    private final long timestampLeftShift = dataShiftBits + dataIdBits;
+    private final long timestampLeftShift = sequenceBits + workIdBits;
 //    /**
 //     * 4095 生成序列的最大值
 //     */
@@ -67,11 +59,10 @@ public class SnowflakeIdWorker {
     /**
      * 机器码id 小于31
      */
-    private long worderId;
-    /**
-     * 数据中心id 小于31
-     */
-    private long dataId;
+    private long workerId;
+
+    private String workerIdStr;
+
 
     /**
      * 毫秒内计数(0-4095)
@@ -96,18 +87,19 @@ public class SnowflakeIdWorker {
     /**
      * 初始化并配置机器码id和数据id
      *
-     * @param workerId 0-31
-     * @param dataId   0-31
+     * @param workerId
      */
-    public void init(long workerId, long dataId) {
-        if (workerId > maxWorkerId || worderId < 0) {
+    public void init(long workerId) {
+        if (workerId > maxWorkerId || workerId < 0) {
             throw new IllegalArgumentException(String.format("worker Id can't greater than %d or less than 0", maxWorkerId));
         }
-        if (dataId > maxDataGenID || dataId < 0) {
-            throw new IllegalArgumentException(String.format("data Id can't greater than %d or less than 0", maxDataGenID));
+
+        this.workerId = workerId;
+        if(workerId < 10){
+            this.workerIdStr = "0"+workerId;
+        }else{
+            this.workerIdStr = workerId + "";
         }
-        this.worderId = workerId;
-        this.dataId = dataId;
     }
 
     public String nextId(){
@@ -173,15 +165,14 @@ public class SnowflakeIdWorker {
 
         if(IDFormatEnum.ID_FORMAT_NORMAL == format){
             return String.valueOf (((lastTimeStamp - startTime) << timestampLeftShift)
-                    | (dataId << dataShiftBits)
-                    | (worderId << sequenceBits)
+                    | (workerId << sequenceBits)
                     | sequence.get());
         }
 
         //使用currentTime时重复，因为lastTimeStamp与currentTime 时间可能不同步
         //不能使用System.currentTimeMillis()，可能与下一秒或毫秒id重复，只能使用lastTimeStamp，秒 * 1000
 
-        return getFormatValue() + worderId +  MathUtil.appendZero(String.valueOf(sequence), format.getLength());
+        return getFormatValue() + workerIdStr +  MathUtil.appendZero(String.valueOf(sequence), format.getLength());
     }
 
     /**
@@ -268,41 +259,34 @@ public class SnowflakeIdWorker {
     //--------------------------test--------------------------------------
     public static void main(String[] args) {
 
-        SnowflakeIdWorker worker = new SnowflakeIdWorker(IDFormatEnum.ID_FORMAT_MILLISECOND, 100);
-        worker.init(30,30);
-//        Map<String, String> formatMap = new ConcurrentHashMap<>();
-//        long startTime = System.currentTimeMillis();
-//        for (int i = 0; i < 20000000; i++) {
+        SnowflakeIdWorker worker = new SnowflakeIdWorker(IDFormatEnum.ID_FORMAT_SECOND, 100);
+        worker.init(3);
+        Map<String, String> formatMap = new ConcurrentHashMap<>();
+        long startTime = System.currentTimeMillis();
+//        for (int i = 0; i < 200; i++) {
 //
-//            worker.nextId();
-//            long value;
-//            if(format == IDFormatEnum.ID_FORMAT_SECOND
-//                    || format == IDFormatEnum.ID_FORMAT_SHOT_YEAR_SECOND){
-//                value = System.currentTimeMillis() / 1000;
-//            }
-//
-//            value =  System.currentTimeMillis();
-//            System.out.println("---");
+//            System.out.println(worker.nextId());
 //        }
-//
+////
 //        long time = System.currentTimeMillis() -startTime;
 //        System.out.println("====time=" + time);
 
 
-
+//
         final Hashtable<String, String> ids = new Hashtable<String, String>();
 
         final int idMax = 500000;
         final CountDownLatch cntdown = new CountDownLatch(4);
         List<String> idc = new ArrayList<>();
 
-        long startTime=System.currentTimeMillis();   //获取开始时间
+//        long startTime=System.currentTimeMillis();   //获取开始时间
         Thread t1 = new Thread(new Runnable() {
 
             public void run() {
 
                 for (int i = 0; i < idMax; i++) {
                     String id = worker.nextId();
+
                     ids.put(id, i + "");
                 }
                 System.out.println("ok1");
@@ -315,7 +299,8 @@ public class SnowflakeIdWorker {
             public void run() {
 
                 for (int i = 0; i < idMax; i++) {
-                    ids.put(worker.nextId(), i + "");
+                    String id = worker.nextId();
+                    ids.put(id, i + "");
                 }
                 System.out.println("ok2");
                 cntdown.countDown();
@@ -327,7 +312,8 @@ public class SnowflakeIdWorker {
             public void run() {
 
                 for (int i = 0; i < idMax; i++) {
-                    ids.put(worker.nextId(), i + "");
+                    String id = worker.nextId();
+                    ids.put(id, i + "");
                 }
                 System.out.println("ok3");
                 cntdown.countDown();
@@ -338,7 +324,9 @@ public class SnowflakeIdWorker {
             public void run() {
 
                 for (int i = 0; i < idMax; i++) {
-                    ids.put(worker.nextId(), i + "");
+                    String id = worker.nextId();
+                    System.out.println(id);
+                    ids.put(id, i + "");
                 }
                 System.out.println("ok4");
                 cntdown.countDown();

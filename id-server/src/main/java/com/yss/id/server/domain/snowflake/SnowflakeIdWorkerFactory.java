@@ -28,7 +28,7 @@ public class SnowflakeIdWorkerFactory {
 
                     SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker(format, idServerProperties.getSnowflake().getStep());
                     int workerId = idServerProperties.getSnowflake().getWorkerId();
-                    snowflakeIdWorker.init(workerId,workerId);
+                    snowflakeIdWorker.init(workerId);
 
                     snowflakeIdWorkers.put(format, snowflakeIdWorker);
                 }

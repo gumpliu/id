@@ -42,7 +42,7 @@ public abstract class AbstractIdGenerator<T> {
      */
     public String nextId(String bizTag){
 
-        if(StringUtils.isEmpty(bizTag)){
+        if(StringUtils.isEmpty(bizTag.trim())){
             throw new IdException("nextId bizTag Can not be empty ！！");
         }
 

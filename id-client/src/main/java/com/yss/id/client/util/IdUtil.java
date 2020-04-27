@@ -51,9 +51,9 @@ public class IdUtil {
      * @param length id长度
      * @return
      */
-    public static String getSegmentFixedLengthNextId(String bizTag, int length){
-        return idGenerator.getSegmentFixedLengthNextId(bizTag, length);
-    }
+//    public static String getSegmentFixedLengthNextId(String bizTag, int length){
+//        return idGenerator.getSegmentFixedLengthNextId(bizTag, length);
+//    }
 
     /**
      * 返回id为固定长度并添加前缀，
@@ -63,9 +63,10 @@ public class IdUtil {
      * @param length id长度
      * @return
      */
-    public static String getSegmentFixedLengthNextId(String prefix, String bizTag, int length){
-        return idGenerator.getSegmentFixedLengthNextId(prefix, bizTag, length);
-    }
+
+//    public static String getSegmentFixedLengthNextId(String prefix, String bizTag, int length){
+//        return idGenerator.getSegmentFixedLengthNextId(prefix, bizTag, length);
+//    }
 
     /**
      * 获取snowflake模式id,返回id值，确定返回长度请查看{@link IDFormatEnum}

@@ -25,7 +25,7 @@ public class SnowflakeCheckTimeTask {
     private void configureTasks() {
 
         try{
-            snowflakeCheckTime.chekoutTime();
+            snowflakeCheckTime.snowflakecheck();
             
             if(!idServerProperties.getSnowflake().isEnable()){
                 idServerProperties.getSnowflake().setEnable(true);

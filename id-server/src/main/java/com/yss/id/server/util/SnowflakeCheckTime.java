@@ -37,7 +37,7 @@ public class SnowflakeCheckTime {
 
 
     @PostConstruct
-    public void chekoutTime(){
+    public void snowflakecheck(){
 
         if(idServerProperties.getSnowflake().isEnable()){
 
@@ -52,6 +52,12 @@ public class SnowflakeCheckTime {
             if(differenceValue.abs().compareTo(MAX_DIFFERENCE_VALUE) == 1){
                 throw new IdException("Snowflake time is error!");
             }
+
+            int workerId = idServerProperties.getSnowflake().getWorkerId();
+            if(workerId >= 100 || workerId <= 0){
+                throw new IdException("Snowflake worderId Cannot be greater than 100 or less than or equal to 0！！");
+            }
+
         }
     }
 
