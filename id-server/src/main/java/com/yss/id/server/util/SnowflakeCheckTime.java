@@ -55,7 +55,7 @@ public class SnowflakeCheckTime {
 
             int workerId = idServerProperties.getSnowflake().getWorkerId();
             if(workerId >= 100 || workerId <= 0){
-                throw new IdException("Snowflake worderId Cannot be greater than 100 or less than or equal to 0！！");
+                throw new IdException("Snowflake worderId Cannot be greater than 99 or less than or equal to 0！！");
             }
 
         }
