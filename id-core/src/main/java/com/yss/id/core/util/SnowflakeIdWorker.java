@@ -2,8 +2,12 @@ package com.yss.id.core.util;
 
 import com.yss.id.core.constans.IDFormatEnum;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -73,6 +77,9 @@ public class SnowflakeIdWorker {
      * 毫秒内计数(0-4095)
      */
     private volatile AtomicLong sequence = new AtomicLong(0);
+
+    private Map<String, String> formatMap = new ConcurrentHashMap<>();
+
     /**
      * 上一次生成id的时间戳
      */
@@ -136,7 +143,7 @@ public class SnowflakeIdWorker {
 
         long timeStamp = genTimeStamp();
 
-        long compareTimeStamp = compareTime(timeStamp);
+        long compareTimeStamp =  compareTime(timeStamp);
 
         long compareLastTimeStamp = compareTime(this.lastTimeStamp);
 
@@ -154,13 +161,13 @@ public class SnowflakeIdWorker {
             }
 
         } else {  /**此时表示时间戳跟最后的时间戳不一致,需要重置序列*/
+            removeKey();
             this.sequence.set(0);
         }
         this.lastTimeStamp = genTimeStamp();
 
         return getId();
     }
-
 
     private String getId(){
 
@@ -173,10 +180,34 @@ public class SnowflakeIdWorker {
 
         //使用currentTime时重复，因为lastTimeStamp与currentTime 时间可能不同步
         //不能使用System.currentTimeMillis()，可能与下一秒或毫秒id重复，只能使用lastTimeStamp，秒 * 1000
-        String dateTime  = DateUtil.dateToString(lastTimeStamp, format.getFormat());
-        String id = dateTime + worderId +  MathUtil.appendZero(String.valueOf(sequence), format.getLength());
-        return id;
 
+        return getFormatValue() + worderId +  MathUtil.appendZero(String.valueOf(sequence), format.getLength());
+    }
+
+    /**
+     * 删除Map中key
+     */
+    private void removeKey(){
+        if(format != IDFormatEnum.ID_FORMAT_NORMAL){
+            formatMap.remove(compareTime(this.lastTimeStamp)+"");
+        }
+    }
+
+    /**
+     * 获取时间格式
+     * @return
+     */
+    private String getFormatValue(){
+        String key = compareTime(lastTimeStamp)+"";
+        String dateTime;
+        if(formatMap.containsKey(key)){
+            dateTime =  formatMap.get(key);
+        }else {
+            dateTime  = DateUtil.dateToString(lastTimeStamp, format.getFormat());
+            formatMap.put(key, dateTime);
+        }
+
+        return dateTime;
     }
 
     /**
@@ -215,6 +246,7 @@ public class SnowflakeIdWorker {
         while (timeStamp <= lastTimeStamp) {
             timeStamp = compareTime(genTimeStamp());
         }
+        removeKey();
         this.sequence.set(0L);
     }
 
@@ -236,11 +268,31 @@ public class SnowflakeIdWorker {
     //--------------------------test--------------------------------------
     public static void main(String[] args) {
 
-        SnowflakeIdWorker worker = new SnowflakeIdWorker(IDFormatEnum.ID_FORMAT_SHOT_YEAR_MILLISECOND, 1000);
+        SnowflakeIdWorker worker = new SnowflakeIdWorker(IDFormatEnum.ID_FORMAT_MILLISECOND, 100);
         worker.init(30,30);
+//        Map<String, String> formatMap = new ConcurrentHashMap<>();
+//        long startTime = System.currentTimeMillis();
+//        for (int i = 0; i < 20000000; i++) {
+//
+//            worker.nextId();
+//            long value;
+//            if(format == IDFormatEnum.ID_FORMAT_SECOND
+//                    || format == IDFormatEnum.ID_FORMAT_SHOT_YEAR_SECOND){
+//                value = System.currentTimeMillis() / 1000;
+//            }
+//
+//            value =  System.currentTimeMillis();
+//            System.out.println("---");
+//        }
+//
+//        long time = System.currentTimeMillis() -startTime;
+//        System.out.println("====time=" + time);
+
+
+
         final Hashtable<String, String> ids = new Hashtable<String, String>();
 
-        final int idMax = 50000;
+        final int idMax = 500000;
         final CountDownLatch cntdown = new CountDownLatch(4);
         List<String> idc = new ArrayList<>();
 
@@ -251,9 +303,6 @@ public class SnowflakeIdWorker {
 
                 for (int i = 0; i < idMax; i++) {
                     String id = worker.nextId();
-                    if(ids.containsKey(id)){
-                        idc.add(id);
-                    }
                     ids.put(id, i + "");
                 }
                 System.out.println("ok1");
@@ -266,11 +315,7 @@ public class SnowflakeIdWorker {
             public void run() {
 
                 for (int i = 0; i < idMax; i++) {
-                    String id = worker.nextId();
-                    if(ids.containsKey(id)){
-                        idc.add(id);
-                    }
-                    ids.put(id, i + "");
+                    ids.put(worker.nextId(), i + "");
                 }
                 System.out.println("ok2");
                 cntdown.countDown();
@@ -282,11 +327,7 @@ public class SnowflakeIdWorker {
             public void run() {
 
                 for (int i = 0; i < idMax; i++) {
-                    String id = worker.nextId();
-                    if(ids.containsKey(id)){
-                        idc.add(id);
-                    }
-                    ids.put(id, i + "");
+                    ids.put(worker.nextId(), i + "");
                 }
                 System.out.println("ok3");
                 cntdown.countDown();
@@ -297,11 +338,7 @@ public class SnowflakeIdWorker {
             public void run() {
 
                 for (int i = 0; i < idMax; i++) {
-                    String id = worker.nextId();
-                    if(ids.containsKey(id)){
-                        idc.add(id);
-                    }
-                    ids.put(id, i + "");
+                    ids.put(worker.nextId(), i + "");
                 }
                 System.out.println("ok4");
                 cntdown.countDown();
