@@ -49,16 +49,15 @@ public abstract class AbstractIdGenerator<T> {
 
         synchronized (baseBuffer){
              while (true){
-                if(baseBuffer.isCurrentEmpty()){
+                 if(baseBuffer.isCurrentEmpty()){
                     loadCurrent(baseBuffer, BigDecimal.ZERO.toString());
                     continue;
-                }
-                 String nextId = baseBuffer.nextId();
+                 }
+                 String nextId =  baseBuffer.nextId();
+
                  //id是否可以使用
-                 if(baseBuffer.switchBufer(nextId)){
+                 if(baseBuffer.switchBufer(nextId) || baseBuffer.isInitBuffer(nextId)){
                      loadCurrent(baseBuffer, nextId);
-                 } else if(baseBuffer.isInitBuffer(nextId)){
-                     initBuffer(baseBuffer, nextId);
                  }else{
                      //判断是否需要获取下缓存
                      loadNextBuffer(baseBuffer, nextId);
@@ -69,28 +68,16 @@ public abstract class AbstractIdGenerator<T> {
     }
 
     /**
-     * 重新初始化baseBuffer
-     * @param baseBuffer
-     */
-    public  void initBuffer(BaseBuffer baseBuffer, String nextId){
-
-    }
-
-    /**
      * 获取current buffer
      * @param baseBuffer
      */
     public void loadCurrent(BaseBuffer baseBuffer, String nextId){
-        if(baseBuffer.isCurrentEmpty()
-                || baseBuffer.switchBufer(nextId)){
-            if(baseBuffer.getBuffers()[baseBuffer.nextPos()] == null){
-                baseBuffer.getBuffers()[baseBuffer.getCurrentPos()] = romoteLoadNextBuffer(baseBuffer.getKey());
-                //同步加载缓存
-            }else {
-                baseBuffer.getBuffers()[baseBuffer.getCurrentPos()] = null;
-                baseBuffer.switchPos();
-                baseBuffer.setAlreadyLoadBuffer(false);
-            }
+        if(baseBuffer.getBuffers()[baseBuffer.nextPos()] == null){
+            baseBuffer.getBuffers()[baseBuffer.getCurrentPos()] = romoteLoadNextBuffer(baseBuffer.getKey());
+        }else {
+            baseBuffer.getBuffers()[baseBuffer.getCurrentPos()] = null;
+            baseBuffer.switchPos();
+            baseBuffer.setAlreadyLoadBuffer(false);
         }
     }
 
@@ -128,7 +115,7 @@ public abstract class AbstractIdGenerator<T> {
                     return baseMap.get(bizTag);
                 }
                 try{
-                    baseBuffer =  createBaseBuffer(bizTag);
+                    baseBuffer = createBaseBuffer(bizTag);
                 }catch (Exception e){
                     throw new IdException("base buffer init error!");
                 }
@@ -154,10 +141,11 @@ public abstract class AbstractIdGenerator<T> {
             String bizTag = baseBuffer.getKey();
             executor.execute(()->{
                 try {
-                    T buffer =  romoteLoadNextBuffer(bizTag);
-                    baseBuffer.getBuffers()[baseBuffer.nextPos()] = buffer;
-                    baseBuffer.setAlreadyLoadBuffer(true);
-
+                    synchronized (baseBuffer){
+                        T buffer =  romoteLoadNextBuffer(bizTag);
+                        baseBuffer.getBuffers()[baseBuffer.nextPos()] = buffer;
+                        baseBuffer.setAlreadyLoadBuffer(true);
+                    }
                     if(logger.isDebugEnabled()){
                         logger.debug("load next buffer end ... ,bizTag={}, baseBuffer={}.", bizTag, JSON.toJSONString(baseBuffer));
                     }

@@ -66,33 +66,28 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
         return MathUtil.appendZero(nextId(bizTag), length);
     }
 
-    @Override
-    public  void initBuffer(BaseBuffer baseBuffer, String nextId) {
-//        去掉synchronized，在nextId加一个锁，性能提升
+//    @Override
+//    public  void initBuffer(BaseBuffer baseBuffer, String nextId) {
 //        if(baseBuffer.isInitBuffer(nextId)){
-//            synchronized (baseBuffer){
-                if(baseBuffer.isInitBuffer(nextId)){
-                    SegmentBuffer segmentBuffer = (SegmentBuffer) baseBuffer;
-                    //nextId超过位数最大值，segment重新初始化
-                    String bizTag = segmentBuffer.getKey();
-                    try{
-                        SegmentId segmentId = idService.initSegmentId(bizTag);
-
-                        Segment segment = getSegment(segmentId, segmentBuffer);
-                        //初始segmentBuffer
-                        segmentBuffer.getBuffers()[segmentBuffer.getCurrentPos()] = segment;
-                        segmentBuffer.setAlreadyLoadBuffer(false);
-                        //另一缓存设置为空
-                        if(segmentBuffer.getBuffers()[segmentBuffer.nextPos()] != null){
-                            segmentBuffer.getBuffers()[segmentBuffer.nextPos()] = null;
-                        }
-                    }catch (Exception e){
-                        throw  new IdException("SegmentBuffer init buffer error!");
-                    }
-                }
+//            SegmentBuffer segmentBuffer = (SegmentBuffer) baseBuffer;
+//            //nextId超过位数最大值，segment重新初始化
+//            String bizTag = segmentBuffer.getKey();
+//            try{
+//                SegmentId segmentId = idService.initSegmentId(bizTag);
+//
+//                Segment segment = getSegment(segmentId, segmentBuffer);
+//                //初始segmentBuffer
+//                segmentBuffer.getBuffers()[segmentBuffer.getCurrentPos()] = segment;
+//                segmentBuffer.setAlreadyLoadBuffer(false);
+//                //另一缓存设置为空
+//                if(segmentBuffer.getBuffers()[segmentBuffer.nextPos()] != null){
+//                    segmentBuffer.getBuffers()[segmentBuffer.nextPos()] = null;
+//                }
+//            }catch (Exception e){
+//                throw  new IdException("SegmentBuffer init buffer error!");
 //            }
 //        }
-    }
+//    }
 
 
     @Override
