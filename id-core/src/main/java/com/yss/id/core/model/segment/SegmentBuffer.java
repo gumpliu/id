@@ -19,7 +19,7 @@ public class SegmentBuffer extends BaseBuffer<Segment> {
 
     @Override
     public synchronized String nextId() {
-        return getCurrent().getValue().incrementAndGet() + "";
+        return String.valueOf(getCurrent().getValue().incrementAndGet());
     }
 
     @Override

@@ -40,7 +40,7 @@ public abstract class AbstractIdGenerator<T> {
      * @param bizTag
      * @return
      */
-    public String nextId(String bizTag){
+    public synchronized String nextId(String bizTag){
 
         if(StringUtils.isEmpty(bizTag.trim())){
             throw new IdException("nextId bizTag Can not be empty ！！");
