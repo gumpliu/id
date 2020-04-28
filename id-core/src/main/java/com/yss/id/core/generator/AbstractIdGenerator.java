@@ -53,19 +53,17 @@ public abstract class AbstractIdGenerator<T> {
                     loadCurrent(baseBuffer, BigDecimal.ZERO.toString());
                     continue;
                 }
-                //获取当前id 比对id是否能用
-                String nextId = baseBuffer.nextId();
-                if(!baseBuffer.switchBufer(nextId)){
-                    //判断是否需要获取下缓存
-                    loadNextBuffer(baseBuffer, nextId);
-                    return nextId.toString();
-                }else{
-                    if(baseBuffer.isInitBuffer(nextId)){
-                        initBuffer(baseBuffer, nextId);
-                    }else{
-                        loadCurrent(baseBuffer, nextId);
-                    }
-                }
+                 String nextId = baseBuffer.nextId();
+                 //id是否可以使用
+                 if(baseBuffer.switchBufer(nextId)){
+                     loadCurrent(baseBuffer, nextId);
+                 } else if(baseBuffer.isInitBuffer(nextId)){
+                     initBuffer(baseBuffer, nextId);
+                 }else{
+                     //判断是否需要获取下缓存
+                     loadNextBuffer(baseBuffer, nextId);
+                     return nextId.toString();
+                 }
              }
          }
     }
