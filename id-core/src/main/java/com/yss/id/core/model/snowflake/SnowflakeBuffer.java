@@ -22,8 +22,9 @@ public class SnowflakeBuffer extends BaseBuffer<Snowflake> {
         buffers =  new Snowflake[]{new Snowflake(this), null};
     }
 
+    //去掉synchronized，在nextId加一个锁，性能提升
     @Override
-    public synchronized String nextId() {
+    public String nextId() {
         if(isCurrentEmpty()){
             return "";
         }
@@ -34,9 +35,9 @@ public class SnowflakeBuffer extends BaseBuffer<Snowflake> {
     public boolean switchBufer(String nextId) {
         return StringUtils.isEmpty(nextId) || isCurrentEmpty();
     }
-
+    //去掉synchronized，在nextId加一个锁，性能提升
     @Override
-    public synchronized boolean isCurrentEmpty() {
+    public boolean isCurrentEmpty() {
         return getCurrent() == null
                 || getCurrent().getQueue() == null
                 || getCurrent().getQueue().isEmpty();

@@ -40,31 +40,32 @@ public abstract class AbstractIdGenerator<T> {
      * @param bizTag
      * @return
      */
-    public synchronized String nextId(String bizTag){
+    public String nextId(String bizTag){
 
         if(StringUtils.isEmpty(bizTag.trim())){
             throw new IdException("nextId bizTag Can not be empty ！！");
         }
-
         BaseBuffer<T> baseBuffer = getBuffer(bizTag);
 
-        while (true){
-            if(baseBuffer.isCurrentEmpty()){
-                loadCurrent(baseBuffer, BigDecimal.ZERO.toString());
-                continue;
-            }
-            //获取当前id 比对id是否能用
-            String nextId = baseBuffer.nextId();
-            //id是否可以使用
-            if(baseBuffer.switchBufer(nextId)){
-                loadCurrent(baseBuffer, nextId);
-            }else if(baseBuffer.isInitBuffer(nextId)){
-                initBuffer(baseBuffer, nextId);
-            }else{
-                //判断是否需要获取下缓存
-                loadNextBuffer(baseBuffer, nextId);
-                return nextId.toString();
-            }
+        synchronized (baseBuffer){
+             while (true){
+                if(baseBuffer.isCurrentEmpty()){
+                    loadCurrent(baseBuffer, BigDecimal.ZERO.toString());
+                    continue;
+                }
+                //获取当前id 比对id是否能用
+                String nextId = baseBuffer.nextId();
+                //id是否可以使用
+                if(baseBuffer.switchBufer(nextId)){
+                    loadCurrent(baseBuffer, nextId);
+                } else if(baseBuffer.isInitBuffer(nextId)){
+                    initBuffer(baseBuffer, nextId);
+                }else{
+                    //判断是否需要获取下缓存
+                    loadNextBuffer(baseBuffer, nextId);
+                    return nextId.toString();
+                }
+             }
         }
     }
 
@@ -83,7 +84,8 @@ public abstract class AbstractIdGenerator<T> {
     public void loadCurrent(BaseBuffer baseBuffer, String nextId){
         if(baseBuffer.isCurrentEmpty()
                 || baseBuffer.switchBufer(nextId)){
-            synchronized (baseBuffer){
+//           去掉synchronized，在nextId加一个锁，性能提升
+//            synchronized (baseBuffer){
                 if(baseBuffer.isCurrentEmpty()
                         || baseBuffer.switchBufer(nextId)){
                     if(baseBuffer.getBuffers()[baseBuffer.nextPos()] == null){
@@ -95,7 +97,7 @@ public abstract class AbstractIdGenerator<T> {
                         baseBuffer.setAlreadyLoadBuffer(false);
                     }
                 }
-            }
+//            }
         }
     }
 
@@ -157,9 +159,9 @@ public abstract class AbstractIdGenerator<T> {
                 && baseBuffer.getThreadRunning().compareAndSet(false, true)){
 
             String bizTag = baseBuffer.getKey();
-
-            synchronized (baseBuffer){
-                if(!baseBuffer.isAlreadyLoadBuffer()){
+//    //去掉synchronized，在nextId加一个锁，性能提升
+//            synchronized (baseBuffer){
+//                if(!baseBuffer.isAlreadyLoadBuffer()){
                     executor.execute(()->{
                         try {
                             T buffer =  romoteLoadNextBuffer(bizTag);
@@ -177,9 +179,9 @@ public abstract class AbstractIdGenerator<T> {
                             baseBuffer.getThreadRunning().set(false);
                         }
                     });
-                }
+//                }
 
-            }
+//            }
         }
 
     }

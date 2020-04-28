@@ -69,9 +69,9 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
 
     @Override
     public  void initBuffer(BaseBuffer baseBuffer, String nextId) {
-
-        if(baseBuffer.isInitBuffer(nextId)){
-            synchronized (baseBuffer){
+//        去掉synchronized，在nextId加一个锁，性能提升
+//        if(baseBuffer.isInitBuffer(nextId)){
+//            synchronized (baseBuffer){
                 if(baseBuffer.isInitBuffer(nextId)){
                     SegmentBuffer segmentBuffer = (SegmentBuffer) baseBuffer;
                     //nextId超过位数最大值，segment重新初始化
@@ -91,10 +91,8 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
                         throw  new IdException("SegmentBuffer init buffer error!");
                     }
                 }
-            }
-        }
-
-
+//            }
+//        }
     }
 
 

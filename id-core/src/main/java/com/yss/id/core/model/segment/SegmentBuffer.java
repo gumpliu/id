@@ -16,9 +16,9 @@ public class SegmentBuffer extends BaseBuffer<Segment> {
         buffers = new Segment[]{new Segment(this), null};
     }
 
-
+    //去掉synchronized，在nextId加一个锁，性能提升
     @Override
-    public synchronized String nextId() {
+    public String nextId() {
         return String.valueOf(getCurrent().getValue().incrementAndGet());
     }
 
@@ -41,8 +41,9 @@ public class SegmentBuffer extends BaseBuffer<Segment> {
         return getCurrent() == null;
     }
 
+    //去掉synchronized，在nextId加一个锁，性能提升
     @Override
-    public synchronized BigDecimal getMaxId() {
+    public BigDecimal getMaxId() {
         if(getCurrent() == null){
             return BigDecimal.ZERO;
         }
