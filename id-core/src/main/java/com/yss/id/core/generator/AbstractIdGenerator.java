@@ -55,18 +55,19 @@ public abstract class AbstractIdGenerator<T> {
                 }
                 //获取当前id 比对id是否能用
                 String nextId = baseBuffer.nextId();
-                //id是否可以使用
-                if(baseBuffer.switchBufer(nextId)){
-                    loadCurrent(baseBuffer, nextId);
-                } else if(baseBuffer.isInitBuffer(nextId)){
-                    initBuffer(baseBuffer, nextId);
-                }else{
+                if(!baseBuffer.switchBufer(nextId)){
                     //判断是否需要获取下缓存
                     loadNextBuffer(baseBuffer, nextId);
                     return nextId.toString();
+                }else{
+                    if(baseBuffer.isInitBuffer(nextId)){
+                        initBuffer(baseBuffer, nextId);
+                    }else{
+                        loadCurrent(baseBuffer, nextId);
+                    }
                 }
              }
-        }
+         }
     }
 
     /**
@@ -84,20 +85,14 @@ public abstract class AbstractIdGenerator<T> {
     public void loadCurrent(BaseBuffer baseBuffer, String nextId){
         if(baseBuffer.isCurrentEmpty()
                 || baseBuffer.switchBufer(nextId)){
-//           去掉synchronized，在nextId加一个锁，性能提升
-//            synchronized (baseBuffer){
-                if(baseBuffer.isCurrentEmpty()
-                        || baseBuffer.switchBufer(nextId)){
-                    if(baseBuffer.getBuffers()[baseBuffer.nextPos()] == null){
-                        baseBuffer.getBuffers()[baseBuffer.getCurrentPos()] = romoteLoadNextBuffer(baseBuffer.getKey());
-                        //同步加载缓存
-                    }else {
-                        baseBuffer.getBuffers()[baseBuffer.getCurrentPos()] = null;
-                        baseBuffer.switchPos();
-                        baseBuffer.setAlreadyLoadBuffer(false);
-                    }
-                }
-//            }
+            if(baseBuffer.getBuffers()[baseBuffer.nextPos()] == null){
+                baseBuffer.getBuffers()[baseBuffer.getCurrentPos()] = romoteLoadNextBuffer(baseBuffer.getKey());
+                //同步加载缓存
+            }else {
+                baseBuffer.getBuffers()[baseBuffer.getCurrentPos()] = null;
+                baseBuffer.switchPos();
+                baseBuffer.setAlreadyLoadBuffer(false);
+            }
         }
     }
 
@@ -159,31 +154,23 @@ public abstract class AbstractIdGenerator<T> {
                 && baseBuffer.getThreadRunning().compareAndSet(false, true)){
 
             String bizTag = baseBuffer.getKey();
-//    //去掉synchronized，在nextId加一个锁，性能提升
-//            synchronized (baseBuffer){
-//                if(!baseBuffer.isAlreadyLoadBuffer()){
-                    executor.execute(()->{
-                        try {
-                            T buffer =  romoteLoadNextBuffer(bizTag);
+            executor.execute(()->{
+                try {
+                    T buffer =  romoteLoadNextBuffer(bizTag);
+                    baseBuffer.getBuffers()[baseBuffer.nextPos()] = buffer;
+                    baseBuffer.setAlreadyLoadBuffer(true);
 
-                            baseBuffer.getBuffers()[baseBuffer.nextPos()] = buffer;
-                            baseBuffer.setAlreadyLoadBuffer(true);
+                    if(logger.isDebugEnabled()){
+                        logger.debug("load next buffer end ... ,bizTag={}, baseBuffer={}.", bizTag, JSON.toJSONString(baseBuffer));
+                    }
+                }catch (Exception e){
+                    logger.error("load next buffer error, buffer is null!!");
 
-                            if(logger.isDebugEnabled()){
-                                logger.debug("load next buffer end ... ,bizTag={}, baseBuffer={}.", bizTag, JSON.toJSONString(baseBuffer));
-                            }
-                        }catch (Exception e){
-                            logger.error("load next buffer error, buffer is null!!");
-
-                        }finally {
-                            baseBuffer.getThreadRunning().set(false);
-                        }
-                    });
-//                }
-
-//            }
+                }finally {
+                    baseBuffer.getThreadRunning().set(false);
+                }
+            });
         }
-
     }
 
     /**

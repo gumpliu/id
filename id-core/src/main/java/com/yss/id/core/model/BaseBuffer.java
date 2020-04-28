@@ -2,6 +2,8 @@ package com.yss.id.core.model;
 
 import java.math.BigDecimal;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * 双buffer
@@ -14,11 +16,15 @@ public abstract class BaseBuffer<T> {
     private volatile boolean nextReady; //下一个segment是否处于可切换状态
     private volatile boolean alreadyLoadBuffer; //是否已经换成另一缓存
     private final AtomicBoolean threadRunning;
+    private final ReadWriteLock lock;
+
 
 
     public BaseBuffer() {
         threadRunning = new AtomicBoolean(false);
         currentPos = 0;
+        lock = new ReentrantReadWriteLock();
+
     }
 
 
@@ -120,4 +126,7 @@ public abstract class BaseBuffer<T> {
         this.alreadyLoadBuffer = alreadyLoadBuffer;
     }
 
+    public ReadWriteLock getLock() {
+        return lock;
+    }
 }
