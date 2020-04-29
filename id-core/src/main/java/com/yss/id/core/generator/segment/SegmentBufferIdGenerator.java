@@ -53,7 +53,7 @@ public class SegmentBufferIdGenerator extends AbstractIdGenerator<Segment> {
      */
     public String fixedLengthNextId(String bizTag, int length){
 
-        if(StringUtils.isEmpty(bizTag.trim())){
+        if(bizTag == null || StringUtils.isEmpty(bizTag.trim())){
             throw new IdException("fixedLengthNextId bizTag Can not be empty ！！");
         }
 

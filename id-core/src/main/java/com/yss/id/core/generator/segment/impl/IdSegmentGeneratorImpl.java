@@ -31,7 +31,7 @@ public class IdSegmentGeneratorImpl extends SegmentBufferIdGenerator implements 
 
     @Override
     public String getSegmentFixedLengthNextId(String prefix, String bizTag) {
-        if(StringUtils.isEmpty(prefix.trim())){
+        if(prefix == null || StringUtils.isEmpty(prefix.trim())){
             throw new IdException("getSegmentFixedLengthNextId prefix Can not be empty ！！");
         }
         
