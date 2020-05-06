@@ -7,8 +7,6 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
-@EnableCaching
-@EnableJpaAuditing
 public class Application extends SpringBootServletInitializer {
 
 	public static void main(String[] args) {
