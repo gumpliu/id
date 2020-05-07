@@ -115,11 +115,11 @@ public abstract class AbstractIdGenerator<T> {
                     return baseMap.get(bizTag);
                 }
                 try{
-                    baseBuffer = createBaseBuffer(bizTag);
+                    BaseBuffer buffer = createBaseBuffer(bizTag);
+                    baseMap.put(bizTag, buffer);
                 }catch (Exception e){
                     throw new IdException("base buffer init error!");
                 }
-                baseMap.put(bizTag, baseBuffer);
             }
         }
         return baseBuffer;
