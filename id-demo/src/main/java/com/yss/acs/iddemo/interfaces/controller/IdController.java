@@ -56,7 +56,7 @@ public class IdController {
 	@RequestMapping(value="/get/{bizTag}", method = RequestMethod.GET, produces="application/json")
 	public Result get(@PathVariable String bizTag) {
 
-		return ResultFactory.success(IdUtil.getSegmentFixedLengthNextId(" "));
+		return ResultFactory.success(IdUtil.getSegmentNextId(bizTag));
 	}
 
 

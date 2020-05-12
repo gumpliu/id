@@ -253,7 +253,7 @@
     </pluginRepositories>
 
     <build>
-        <finalName>${project.groupId}.${project.artifactId}-${project.version}</finalName>
+        <finalName>${project.artifactId}-${project.version}</finalName>
 
         <sourceDirectory>src/main/java</sourceDirectory>
         <testSourceDirectory>src/test/java</testSourceDirectory>

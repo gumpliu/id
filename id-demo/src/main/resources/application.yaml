@@ -5,14 +5,18 @@
 server:
   port: 8090
 
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://192.168.101.201:8761/eureka/
 spring:
   application:
-    name: service-portal
+    name: id-demo
   datasource:
 #    driver-class-name: oracle.jdbc.OracleDriver
-#    url: jdbc:oracle:thin:@192.168.96.8:1521/localoracle
-#    username: sofa_007
-#    password: sofa_007
+#    url: jdbc:oracle:thin:@192.168.96.7:1521/orcl
+#    username: sofa_qqq
+#    password: sofa_qqq
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/sofa?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8
     username: root

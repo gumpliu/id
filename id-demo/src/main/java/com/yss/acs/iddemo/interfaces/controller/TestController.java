@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.yss.fsip.generic.Result;
 import com.yss.id.client.util.IdUtil;
 import com.yss.id.core.constans.IDFormatEnum;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicLong;
 
-@org.springframework.context.annotation.Scope("prototype")
+@Scope("prototype")
 @Controller
 @RequestMapping("/test")
 public class TestController {
