@@ -1,21 +1,19 @@
 package com.yss.id.client;
 
 import com.yss.id.client.config.IdClientConfig;
+import com.yss.id.client.service.HttpIdServiceImpl;
+import com.yss.id.client.util.BeanUtil;
 import com.yss.id.core.generator.segment.IdSegmentGenerator;
 import com.yss.id.core.generator.segment.impl.IdSegmentGeneratorImpl;
 import com.yss.id.core.generator.snowflake.IdSnowflakeGenerator;
 import com.yss.id.core.generator.snowflake.impl.IdSnowflakeGeneratorImpl;
 import com.yss.id.core.service.IdService;
-import com.yss.id.client.service.HttpIdServiceImpl;
-import com.yss.id.client.util.BeanUtil;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * todo 服务注册、服务消费 对接Eureka及figen
- *
+/***
  * @Description: id-client 启动类
  * @Author gumpLiu
  * @Date 2020-03-30
@@ -32,7 +30,7 @@ public class IdClientAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(IdService.class)
-    public IdService idService(){
+    public IdService httpService(){
         return new HttpIdServiceImpl();
     }
 
