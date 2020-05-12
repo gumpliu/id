@@ -7,18 +7,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import javax.annotation.PostConstruct;
 
-/**
- * todo 异常处理
- * todo 添加日志
- * todo id-server 启动校验
- *
- */
 @SpringBootApplication
 @EnableJpaAuditing
+@EnableDiscoveryClient
 @EnableConfigurationProperties(IdServerProperties.class)
 public class Application extends SpringBootServletInitializer {
 

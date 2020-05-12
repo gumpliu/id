@@ -4,19 +4,25 @@
 #  prot: 8080
 server:
   port: 8091
-
+eureka:
+  instance:
+    prefer-ip-address: true
+    ip-address: 192.168.96.14
+  client:
+    service-url:
+      defaultZone: http://192.168.101.201:8761/eureka/
 spring:
   application:
-    name: service-portal
+    name: id-server
   datasource:
-#    driver-class-name: oracle.jdbc.OracleDriver
-#    url: jdbc:oracle:thin:@192.168.96.8:1521/localoracle
-#    username: sofa_007
-#    password: sofa_007
-    driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/sofa?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8
-    username: root
-    password: 123456
+    driver-class-name: oracle.jdbc.OracleDriver
+    url: jdbc:oracle:thin:@192.168.96.7:1521/orcl
+    username: sofa_qqq
+    password: sofa_qqq
+#    driver-class-name: com.mysql.jdbc.Driver
+#    url: jdbc:mysql://192.168.96.14:3306/sofa?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8
+#    username: root
+#    password: 123456
     default-auto-commit: true
     auto-commit: true
     maximum-pool-size: 100
@@ -29,11 +35,6 @@ spring:
     time-between-eviction-runs-millis: 18800
     minEvictableIdleTimeMillis: 300000
     allow-bean-definition-overriding: true
-  jpa:
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: false
   #时间戳统一转换
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
@@ -44,7 +45,7 @@ logging:
   config: classpath:logback-spring.xml
 id:
   segement:
-    step: 1000
+    step: 10
   snowflake:
     step: 1000
     workerId: 23
