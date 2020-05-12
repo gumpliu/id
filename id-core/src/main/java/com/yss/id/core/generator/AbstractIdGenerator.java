@@ -94,7 +94,7 @@ public abstract class AbstractIdGenerator<T> {
         BaseBuffer baseBuffer = baseMap.get(bizTag);
 
         if(baseBuffer == null){
-            baseBuffer = initBaseBuffer(bizTag);
+            return initBaseBuffer(bizTag);
         }
 
         return baseBuffer;
@@ -109,7 +109,7 @@ public abstract class AbstractIdGenerator<T> {
 
         BaseBuffer baseBuffer = baseMap.get(bizTag);
 
-        if(baseMap.get(bizTag) == null){
+        if(baseBuffer == null){
             synchronized (baseMap){
                 if(baseMap.get(bizTag) != null){
                     return baseMap.get(bizTag);
@@ -117,8 +117,9 @@ public abstract class AbstractIdGenerator<T> {
                 try{
                     BaseBuffer buffer = createBaseBuffer(bizTag);
                     baseMap.put(bizTag, buffer);
+                    return buffer;
                 }catch (Exception e){
-                    throw new IdException("base buffer init error!");
+                    throw new IdException("base buffer init error!msg={},message=" + e.getMessage());
                 }
             }
         }
