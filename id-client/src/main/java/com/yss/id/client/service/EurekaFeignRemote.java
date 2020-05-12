@@ -4,11 +4,9 @@ import com.yss.id.core.constans.IDFormatEnum;
 import com.yss.id.core.model.SegmentId;
 import com.yss.id.core.model.SnowflakeId;
 import com.yss.id.core.service.IdService;
-import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 
 public interface EurekaFeignRemote extends IdService {
 
