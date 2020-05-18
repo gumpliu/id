@@ -29,7 +29,6 @@
         </encoder>
     </appender>
 
-
     <!--输出到文件-->
 
     <!-- 时间滚动输出 level为 DEBUG 日志 -->
@@ -84,6 +83,16 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
+    </appender>
+
+    <!-- 异步输出 -->
+    <appender name ="INFO_ASYNC" class= "ch.qos.logback.classic.AsyncAppender">
+        <!-- 不丢失日志.默认的,如果队列的80%已满,则会丢弃TRACT、DEBUG、INFO级别的日志 -->
+        <discardingThreshold >0</discardingThreshold>
+        <!-- 更改默认的队列的深度,该值会影响性能.默认值为256 -->
+        <queueSize>512</queueSize>
+        <!-- 添加附加的appender,最多只能添加一个 -->
+        <appender-ref ref ="INFO_FILE"/>
     </appender>
 
     <!-- 时间滚动输出 level为 WARN 日志 -->
@@ -168,7 +177,7 @@
     <root level="info">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="DEBUG_FILE" />
-        <appender-ref ref="INFO_FILE" />
+        <appender-ref ref="INFO_ASYNC" />
         <appender-ref ref="WARN_FILE" />
         <appender-ref ref="ERROR_FILE" />
     </root>
